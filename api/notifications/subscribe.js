@@ -1,11 +1,32 @@
 // API 路由: 訂閱推播通知
 import webpush from 'web-push'
 
-// 設定 VAPID 金鑰
+// 設定 VAPID 金鑰（從環境變數讀取）
+const vapidPublicKey = process.env.VITE_VAPID_PUBLIC_KEY || process.env.VAPID_PUBLIC_KEY
+const vapidPrivateKey = process.env.VAPID_PRIVATE_KEY
+const vapidEmail = process.env.VAPID_EMAIL || 'mailto:your-email@example.com'
+
+if (!vapidPublicKey || !vapidPrivateKey) {
+  console.warn('⚠️  警告: VAPID 密鑰未設定！請執行 "npm run generate-vapid" 生成密鑰')
+}
+
+// 驗證公鑰格式（Safari 兼容性）
+if (vapidPublicKey) {
+  try {
+    const decoded = Buffer.from(vapidPublicKey, 'base64')
+    if (decoded.length !== 65) {
+      console.error('❌ VAPID 公鑰長度不正確:', decoded.length, 'bytes (應為 65 bytes)')
+      console.error('請執行 "npm run generate-vapid" 生成新的密鑰對')
+    }
+  } catch (e) {
+    console.error('❌ VAPID 公鑰解碼失敗，格式可能不正確')
+  }
+}
+
 webpush.setVapidDetails(
-  'mailto:your-email@example.com',
-  'BEl62iUYgUivxIkv69yViEuiBIa40HI0lF3N3QbLYXopXD2XJpN5KFHvS0buXg3x1CJHBw2eGz8ZUrJ8L7rY8rE', // 公鑰
-  'your-private-key-here' // 私鑰
+  vapidEmail,
+  vapidPublicKey,
+  vapidPrivateKey
 )
 
 export default async function handler(req, res) {

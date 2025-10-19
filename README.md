@@ -89,11 +89,31 @@ pnpm setup-env
 npm run setup-env
 ```
 
+### 推播通知設定（重要！）
+
+推播通知需要配置 VAPID 密鑰，特別是 **Safari 瀏覽器需要有效的 P-256 公鑰**：
+
+```bash
+# 1. 生成 VAPID 密鑰對
+npm run generate-vapid
+
+# 2. 創建 .env 文件並填入生成的密鑰
+# 查看 ENV_VAPID_SETUP.md 了解詳細步驟
+```
+
+**Safari 推播通知錯誤？** 查看 [Safari 推播通知快速修復指南](./SAFARI_NOTIFICATION_QUICK_FIX.md)
+
 ## 📚 相關文檔
 
+### 基礎設定
 - [PWA 設定指南](./PWA_SETUP.md)
 - [部署指南](./DEPLOYMENT.md)
 - [環境變量管理](./ENV_MANAGEMENT.md)
+
+### 推播通知
+- [VAPID 密鑰設定指南](./ENV_VAPID_SETUP.md)
+- [Safari 推播通知快速修復](./SAFARI_NOTIFICATION_QUICK_FIX.md) ⭐
+- [Safari 推播通知詳細技術文檔](./SAFARI_PUSH_NOTIFICATION_FIX.md)
 
 ## 🛠️ 技術棧
 

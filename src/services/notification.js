@@ -64,17 +64,43 @@ class NotificationService {
     }
 
     try {
+      // 取得 VAPID 公鑰
+      const vapidPublicKey = import.meta.env.VITE_VAPID_PUBLIC_KEY || 
+        'BEl62iUYgUivxIkv69yViEuiBIa40HI0lF3N3QbLYXopXD2XJpN5KFHvS0buXg3x1CJHBw2eGz8ZUrJ8L7rY8rE'
+      
+      // 驗證公鑰格式
+      if (!vapidPublicKey || vapidPublicKey.length < 80) {
+        throw new Error('VAPID 公鑰格式不正確')
+      }
+
+      // 轉換公鑰
+      let applicationServerKey
+      try {
+        applicationServerKey = this.urlBase64ToUint8Array(vapidPublicKey)
+        
+        // Safari 需要驗證 key 的長度（P-256 公鑰應該是 65 bytes）
+        if (applicationServerKey.length !== 65) {
+          throw new Error(`VAPID 公鑰長度不正確: ${applicationServerKey.length} bytes (應為 65 bytes)`)
+        }
+      } catch (conversionError) {
+        console.error('公鑰轉換失敗:', conversionError)
+        throw new Error('VAPID 公鑰轉換失敗: ' + conversionError.message)
+      }
+
       const subscription = await this.registration.pushManager.subscribe({
         userVisibleOnly: true,
-        applicationServerKey: this.urlBase64ToUint8Array(
-          import.meta.env.VITE_VAPID_PUBLIC_KEY || 'BEl62iUYgUivxIkv69yViEuiBIa40HI0lF3N3QbLYXopXD2XJpN5KFHvS0buXg3x1CJHBw2eGz8ZUrJ8L7rY8rE'
-        )
+        applicationServerKey: applicationServerKey
       })
 
       console.log('推播訂閱成功:', subscription)
       return subscription
     } catch (error) {
       console.error('推播訂閱失敗:', error)
+      
+      // 提供更詳細的錯誤訊息
+      if (error.message.includes('applicationServerKey')) {
+        throw new Error('VAPID 公鑰無效。請確認公鑰是有效的 P-256 公鑰。')
+      }
       throw error
     }
   }
@@ -212,20 +238,44 @@ class NotificationService {
     })
   }
 
-  // 將 VAPID 公鑰轉換為 Uint8Array
+  // 將 VAPID 公鑰轉換為 Uint8Array（Safari 相容版本）
   urlBase64ToUint8Array(base64String) {
-    const padding = '='.repeat((4 - base64String.length % 4) % 4)
-    const base64 = (base64String + padding)
-      .replace(/-/g, '+')
-      .replace(/_/g, '/')
+    try {
+      // 移除可能的空白字元
+      base64String = base64String.trim()
+      
+      // 計算需要的 padding
+      const padding = '='.repeat((4 - base64String.length % 4) % 4)
+      
+      // 將 URL-safe base64 轉換為標準 base64
+      const base64 = (base64String + padding)
+        .replace(/-/g, '+')
+        .replace(/_/g, '/')
 
-    const rawData = window.atob(base64)
-    const outputArray = new Uint8Array(rawData.length)
+      // 解碼 base64
+      let rawData
+      try {
+        rawData = window.atob(base64)
+      } catch (e) {
+        throw new Error('Base64 解碼失敗: 公鑰格式可能不正確')
+      }
 
-    for (let i = 0; i < rawData.length; ++i) {
-      outputArray[i] = rawData.charCodeAt(i)
+      // 轉換為 Uint8Array
+      const outputArray = new Uint8Array(rawData.length)
+      for (let i = 0; i < rawData.length; ++i) {
+        outputArray[i] = rawData.charCodeAt(i)
+      }
+
+      // 驗證結果
+      if (outputArray.length === 0) {
+        throw new Error('轉換後的 key 長度為 0')
+      }
+
+      return outputArray
+    } catch (error) {
+      console.error('urlBase64ToUint8Array 錯誤:', error)
+      throw error
     }
-    return outputArray
   }
 
   // 初始化通知服務

@@ -15,7 +15,8 @@
     "setup-env:staging": "node setup-env.cjs staging",
     "setup-env:prod": "node setup-env.cjs prod",
     "setup-env:all": "node setup-env.cjs all",
-    "generate-vapid": "npx web-push generate-vapid-keys",
+    "generate-vapid": "node scripts/generate-vapid-keys.js",
+    "verify-vapid": "node scripts/verify-vapid-key.js",
     "generate-icons": "node scripts/generate-placeholder-icons.js"
   },
   "dependencies": {
