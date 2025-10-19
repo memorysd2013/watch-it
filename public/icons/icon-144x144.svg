@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="144" height="144" viewBox="0 0 512 512">
+  <rect width="512" height="512" rx="80" fill="#4CAF50"/>
+  <g transform="translate(256, 256)">
+    <circle cx="0" cy="0" r="120" fill="white" opacity="0.95"/>
+    <circle cx="0" cy="0" r="100" fill="none" stroke="#4CAF50" stroke-width="8"/>
+    <line x1="0" y1="0" x2="0" y2="-50" stroke="#4CAF50" stroke-width="8" stroke-linecap="round"/>
+    <line x1="0" y1="0" x2="35" y2="35" stroke="#4CAF50" stroke-width="6" stroke-linecap="round"/>
+    <circle cx="0" cy="-80" r="5" fill="#4CAF50"/>
+    <circle cx="80" cy="0" r="5" fill="#4CAF50"/>
+    <circle cx="0" cy="80" r="5" fill="#4CAF50"/>
+    <circle cx="-80" cy="0" r="5" fill="#4CAF50"/>
+    <circle cx="0" cy="0" r="8" fill="#4CAF50"/>
+    <g transform="translate(-100, 80)" opacity="0.9">
+      <path d="M 0 0 L 15 -10 L 30 5 L 45 -15 L 60 -5" fill="none" stroke="white" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+    </g>
+  </g>
+  <text x="256" y="420" font-family="Arial, sans-serif" font-size="60" font-weight="bold" fill="white" text-anchor="middle">Watch It</text>
+</svg>
