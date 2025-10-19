@@ -1,0 +1,13 @@
+{
+  "functions": {
+    "api/cron/daily-notifications.js": {
+      "maxDuration": 30
+    }
+  },
+  "crons": [
+    {
+      "path": "/api/cron/daily-notifications",
+      "schedule": "0 9 * * *"
+    }
+  ]
+}
