@@ -1,7 +1,7 @@
 // 生成 VAPID 密鑰對
 // 使用方法: node scripts/generate-vapid-keys.js
 
-const webpush = require('web-push');
+import webpush from 'web-push';
 
 console.log('🔐 正在生成 VAPID 密鑰對...\n');
 
