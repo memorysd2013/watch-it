@@ -68,8 +68,16 @@ class NotificationService {
       const vapidPublicKey = import.meta.env.VITE_VAPID_PUBLIC_KEY || 
         'BEl62iUYgUivxIkv69yViEuiBIa40HI0lF3N3QbLYXopXD2XJpN5KFHvS0buXg3x1CJHBw2eGz8ZUrJ8L7rY8rE'
       
+      // 🔍 調試信息：印出當前使用的公鑰
+      console.log('🔍 VAPID 公鑰調試信息:')
+      console.log('原始公鑰:', vapidPublicKey)
+      console.log('公鑰長度:', vapidPublicKey.length, '字符')
+      console.log('環境變數來源:', import.meta.env.VITE_VAPID_PUBLIC_KEY ? '環境變數' : '預設值')
+      
       // 驗證公鑰格式
       if (!vapidPublicKey || vapidPublicKey.length < 80) {
+        console.error('❌ VAPID 公鑰格式不正確')
+        console.error('公鑰長度:', vapidPublicKey?.length || 0)
         throw new Error('VAPID 公鑰格式不正確')
       }
 
@@ -78,28 +86,53 @@ class NotificationService {
       try {
         applicationServerKey = this.urlBase64ToUint8Array(vapidPublicKey)
         
+        // 🔍 調試信息：印出轉換後的公鑰詳情
+        console.log('🔍 公鑰轉換詳情:')
+        console.log('轉換後長度:', applicationServerKey.length, 'bytes')
+        console.log('首字節:', '0x' + applicationServerKey[0].toString(16).padStart(2, '0'))
+        console.log('是否為 P-256 標準:', applicationServerKey.length === 65 ? '✅' : '❌')
+        
         // Safari 需要驗證 key 的長度（P-256 公鑰應該是 65 bytes）
         if (applicationServerKey.length !== 65) {
+          console.error('❌ VAPID 公鑰長度不正確')
+          console.error('實際長度:', applicationServerKey.length, 'bytes')
+          console.error('預期長度: 65 bytes')
           throw new Error(`VAPID 公鑰長度不正確: ${applicationServerKey.length} bytes (應為 65 bytes)`)
         }
+        
+        console.log('✅ 公鑰格式驗證通過')
       } catch (conversionError) {
-        console.error('公鑰轉換失敗:', conversionError)
+        console.error('❌ 公鑰轉換失敗:', conversionError)
+        console.error('原始公鑰:', vapidPublicKey)
         throw new Error('VAPID 公鑰轉換失敗: ' + conversionError.message)
       }
 
+      console.log('🚀 開始訂閱推播通知...')
       const subscription = await this.registration.pushManager.subscribe({
         userVisibleOnly: true,
         applicationServerKey: applicationServerKey
       })
 
-      console.log('推播訂閱成功:', subscription)
+      console.log('✅ 推播訂閱成功:', subscription)
       return subscription
     } catch (error) {
-      console.error('推播訂閱失敗:', error)
+      console.error('❌ 推播訂閱失敗:', error)
       
-      // 提供更詳細的錯誤訊息
+      // 🔍 詳細的錯誤調試信息
+      console.error('🔍 錯誤詳情:')
+      console.error('錯誤類型:', error.name)
+      console.error('錯誤訊息:', error.message)
+      console.error('錯誤堆疊:', error.stack)
+      
+      // 如果是 applicationServerKey 相關錯誤，提供更詳細的信息
       if (error.message.includes('applicationServerKey')) {
-        throw new Error('VAPID 公鑰無效。請確認公鑰是有效的 P-256 公鑰。')
+        console.error('🔍 applicationServerKey 錯誤詳情:')
+        console.error('當前公鑰:', import.meta.env.VITE_VAPID_PUBLIC_KEY)
+        console.error('公鑰長度:', import.meta.env.VITE_VAPID_PUBLIC_KEY?.length)
+        console.error('環境:', import.meta.env.MODE)
+        console.error('是否為生產環境:', import.meta.env.PROD)
+        
+        throw new Error(`VAPID 公鑰無效。請確認公鑰是有效的 P-256 公鑰。\n當前公鑰: ${import.meta.env.VITE_VAPID_PUBLIC_KEY}\n公鑰長度: ${import.meta.env.VITE_VAPID_PUBLIC_KEY?.length} 字符`)
       }
       throw error
     }
@@ -241,22 +274,36 @@ class NotificationService {
   // 將 VAPID 公鑰轉換為 Uint8Array（Safari 相容版本）
   urlBase64ToUint8Array(base64String) {
     try {
+      console.log('🔍 urlBase64ToUint8Array 調試信息:')
+      console.log('輸入公鑰:', base64String)
+      console.log('輸入長度:', base64String.length, '字符')
+      
       // 移除可能的空白字元
-      base64String = base64String.trim()
+      const trimmed = base64String.trim()
+      console.log('去除空白後:', trimmed)
+      console.log('去除空白後長度:', trimmed.length, '字符')
       
       // 計算需要的 padding
-      const padding = '='.repeat((4 - base64String.length % 4) % 4)
+      const padding = '='.repeat((4 - trimmed.length % 4) % 4)
+      console.log('需要 padding:', padding.length, '個 = 符號')
       
       // 將 URL-safe base64 轉換為標準 base64
-      const base64 = (base64String + padding)
+      const base64 = (trimmed + padding)
         .replace(/-/g, '+')
         .replace(/_/g, '/')
+      
+      console.log('標準化後的 base64:', base64)
+      console.log('標準化後長度:', base64.length, '字符')
 
       // 解碼 base64
       let rawData
       try {
         rawData = window.atob(base64)
+        console.log('Base64 解碼成功')
+        console.log('解碼後長度:', rawData.length, '字符')
       } catch (e) {
+        console.error('❌ Base64 解碼失敗:', e.message)
+        console.error('嘗試解碼的字符串:', base64)
         throw new Error('Base64 解碼失敗: 公鑰格式可能不正確')
       }
 
@@ -266,14 +313,22 @@ class NotificationService {
         outputArray[i] = rawData.charCodeAt(i)
       }
 
+      console.log('轉換為 Uint8Array 成功')
+      console.log('輸出長度:', outputArray.length, 'bytes')
+      console.log('首字節:', '0x' + outputArray[0].toString(16).padStart(2, '0'))
+      console.log('前 10 個字節:', Array.from(outputArray.slice(0, 10)).map(b => '0x' + b.toString(16).padStart(2, '0')).join(' '))
+
       // 驗證結果
       if (outputArray.length === 0) {
+        console.error('❌ 轉換後的 key 長度為 0')
         throw new Error('轉換後的 key 長度為 0')
       }
 
+      console.log('✅ urlBase64ToUint8Array 轉換成功')
       return outputArray
     } catch (error) {
-      console.error('urlBase64ToUint8Array 錯誤:', error)
+      console.error('❌ urlBase64ToUint8Array 錯誤:', error)
+      console.error('輸入參數:', base64String)
       throw error
     }
   }
