@@ -1,0 +1,69 @@
+@import './base.css';
+
+/* 全域暗色科技主題 */
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  background: var(--gradient-bg);
+  color: var(--text-primary);
+  min-height: 100vh;
+  position: relative;
+  overflow-x: hidden;
+}
+
+/* 科技感背景動畫效果 */
+body::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: 
+    radial-gradient(circle at 20% 50%, rgba(0, 217, 255, 0.03) 0%, transparent 50%),
+    radial-gradient(circle at 80% 80%, rgba(103, 58, 183, 0.03) 0%, transparent 50%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+#app {
+  max-width: 1280px;
+  margin: 0 auto;
+  font-weight: normal;
+  position: relative;
+  z-index: 1;
+}
+
+a,
+.green {
+  text-decoration: none;
+  color: var(--accent-cyan);
+  transition: all 0.3s ease;
+  padding: 3px;
+  position: relative;
+}
+
+@media (hover: hover) {
+  a:hover {
+    color: var(--text-bright);
+    background-color: rgba(0, 217, 255, 0.15);
+    box-shadow: 0 0 10px rgba(0, 217, 255, 0.2);
+  }
+}
+
+/* 移除預設的網格佈局 */
+@media (min-width: 1024px) {
+  body {
+    display: block;
+  }
+
+  #app {
+    display: block;
+    padding: 0;
+  }
+}
