@@ -15,14 +15,28 @@ function safariEnvPlugin() {
         <script>
           // Safari 手機瀏覽器環境變數注入
           window.__ENV__ = {
+            // VITE_ 前綴的環境變數
             VITE_VAPID_PUBLIC_KEY: '${process.env.VITE_VAPID_PUBLIC_KEY || ''}',
             VITE_ALPHA_VANTAGE_API_KEY: '${process.env.VITE_ALPHA_VANTAGE_API_KEY || ''}',
             VITE_FREECURRENCY_API_KEY: '${process.env.VITE_FREECURRENCY_API_KEY || ''}',
             VITE_VAPID_EMAIL: '${process.env.VITE_VAPID_EMAIL || ''}',
             VITE_APP_URL: '${process.env.VITE_APP_URL || ''}',
-            VITE_APP_VERSION: '${process.env.npm_package_version || '1.1.0'}'
+            VITE_APP_VERSION: '${process.env.npm_package_version || '1.1.0'}',
+            
+            // 非 VITE_ 前綴的環境變數（Safari 備援方案）
+            VAPID_PUBLIC_KEY: '${process.env.VITE_VAPID_PUBLIC_KEY || process.env.VAPID_PUBLIC_KEY || ''}',
+            ALPHA_VANTAGE_API_KEY: '${process.env.VITE_ALPHA_VANTAGE_API_KEY || process.env.ALPHA_VANTAGE_API_KEY || ''}',
+            FREECURRENCY_API_KEY: '${process.env.VITE_FREECURRENCY_API_KEY || process.env.FREECURRENCY_API_KEY || ''}',
+            VAPID_EMAIL: '${process.env.VITE_VAPID_EMAIL || process.env.VAPID_EMAIL || ''}',
+            APP_URL: '${process.env.VITE_APP_URL || process.env.APP_URL || ''}',
+            APP_VERSION: '${process.env.npm_package_version || '1.1.0'}'
           };
           console.log('🔧 Safari 環境變數已注入:', window.__ENV__);
+          console.log('🔍 VAPID 公鑰檢查:', {
+            'VITE_VAPID_PUBLIC_KEY': window.__ENV__.VITE_VAPID_PUBLIC_KEY,
+            'VAPID_PUBLIC_KEY': window.__ENV__.VAPID_PUBLIC_KEY,
+            '兩者是否相同': window.__ENV__.VITE_VAPID_PUBLIC_KEY === window.__ENV__.VAPID_PUBLIC_KEY
+          });
         </script>
       `
       return html.replace('<head>', `<head>${envScript}`)

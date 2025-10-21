@@ -18,28 +18,42 @@ class NotificationService {
   // 獲取環境變數的 Safari 相容方法
   getEnvironmentVariable(key) {
     try {
-      // 標準方法
-      const value = import.meta.env[key]
+      console.log(`🔍 嘗試獲取環境變數: ${key}`)
       
-      // Safari 手機瀏覽器特殊處理
-      if (this.isSafariMobile && (value === undefined || value === null)) {
-        console.warn(`⚠️ Safari 手機瀏覽器環境變數 ${key} 未載入，嘗試備援方案`)
-        
-        // 嘗試從 window 物件獲取（如果有的話）
-        if (window.__ENV__ && window.__ENV__[key]) {
-          console.log(`✅ 從 window.__ENV__ 獲取 ${key}`)
-          return window.__ENV__[key]
-        }
-        
-        // 嘗試從 localStorage 獲取（開發時可能有用）
-        const storedValue = localStorage.getItem(key)
-        if (storedValue) {
-          console.log(`✅ 從 localStorage 獲取 ${key}`)
-          return storedValue
-        }
+      // 方法 1: 標準 import.meta.env
+      const standardValue = import.meta.env[key]
+      console.log(`📋 import.meta.env[${key}]:`, standardValue)
+      
+      // 方法 2: 嘗試非 VITE_ 前綴的版本（Safari 備援方案）
+      const nonViteKey = key.replace('VITE_', '')
+      const nonViteValue = import.meta.env[nonViteKey]
+      console.log(`📋 import.meta.env[${nonViteKey}]:`, nonViteValue)
+      
+      // 方法 3: 從 window.__ENV__ 獲取
+      let windowValue = null
+      if (window.__ENV__) {
+        windowValue = window.__ENV__[key] || window.__ENV__[nonViteKey]
+        console.log(`📋 window.__ENV__[${key}]:`, window.__ENV__[key])
+        console.log(`📋 window.__ENV__[${nonViteKey}]:`, window.__ENV__[nonViteKey])
       }
       
-      return value
+      // 方法 4: 從 localStorage 獲取
+      const storedValue = localStorage.getItem(key) || localStorage.getItem(nonViteKey)
+      console.log(`📋 localStorage[${key}]:`, localStorage.getItem(key))
+      console.log(`📋 localStorage[${nonViteKey}]:`, localStorage.getItem(nonViteKey))
+      
+      // 優先級順序：標準值 > 非 VITE_ 前綴 > window.__ENV__ > localStorage
+      const finalValue = standardValue || nonViteValue || windowValue || storedValue
+      
+      console.log(`✅ 最終選擇的值:`, finalValue)
+      console.log(`📊 值來源:`, {
+        standard: !!standardValue,
+        nonVite: !!nonViteValue,
+        window: !!windowValue,
+        localStorage: !!storedValue
+      })
+      
+      return finalValue
     } catch (error) {
       console.error(`❌ 獲取環境變數 ${key} 失敗:`, error)
       return undefined
