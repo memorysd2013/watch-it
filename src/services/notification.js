@@ -4,6 +4,46 @@ class NotificationService {
     this.isSupported = 'Notification' in window && 'serviceWorker' in navigator
     this.permission = this.isSupported ? Notification.permission : 'denied'
     this.registration = null
+    this.isSafariMobile = this.detectSafariMobile()
+  }
+
+  // 檢測是否為 Safari 手機瀏覽器
+  detectSafariMobile() {
+    const userAgent = navigator.userAgent
+    const isIOS = /iPhone|iPad|iPod/.test(userAgent)
+    const isSafari = /Safari/.test(userAgent) && !/Chrome/.test(userAgent)
+    return isIOS && isSafari
+  }
+
+  // 獲取環境變數的 Safari 相容方法
+  getEnvironmentVariable(key) {
+    try {
+      // 標準方法
+      const value = import.meta.env[key]
+      
+      // Safari 手機瀏覽器特殊處理
+      if (this.isSafariMobile && (value === undefined || value === null)) {
+        console.warn(`⚠️ Safari 手機瀏覽器環境變數 ${key} 未載入，嘗試備援方案`)
+        
+        // 嘗試從 window 物件獲取（如果有的話）
+        if (window.__ENV__ && window.__ENV__[key]) {
+          console.log(`✅ 從 window.__ENV__ 獲取 ${key}`)
+          return window.__ENV__[key]
+        }
+        
+        // 嘗試從 localStorage 獲取（開發時可能有用）
+        const storedValue = localStorage.getItem(key)
+        if (storedValue) {
+          console.log(`✅ 從 localStorage 獲取 ${key}`)
+          return storedValue
+        }
+      }
+      
+      return value
+    } catch (error) {
+      console.error(`❌ 獲取環境變數 ${key} 失敗:`, error)
+      return undefined
+    }
   }
 
   // 請求通知權限
@@ -64,13 +104,28 @@ class NotificationService {
     }
 
     try {
-      // 取得 VAPID 公鑰
-      const vapidPublicKey = import.meta.env.VITE_VAPID_PUBLIC_KEY || 
+      // 🔍 詳細的環境變數調試信息
+      console.log('🔍 環境變數調試信息:')
+      console.log('是否為 Safari 手機瀏覽器:', this.isSafariMobile)
+      console.log('import.meta.env:', import.meta.env)
+      console.log('VITE_VAPID_PUBLIC_KEY 原始值:', import.meta.env.VITE_VAPID_PUBLIC_KEY)
+      console.log('VITE_VAPID_PUBLIC_KEY 類型:', typeof import.meta.env.VITE_VAPID_PUBLIC_KEY)
+      console.log('VITE_VAPID_PUBLIC_KEY 是否為 undefined:', import.meta.env.VITE_VAPID_PUBLIC_KEY === undefined)
+      console.log('VITE_VAPID_PUBLIC_KEY 是否為 null:', import.meta.env.VITE_VAPID_PUBLIC_KEY === null)
+      console.log('VITE_VAPID_PUBLIC_KEY 是否為空字串:', import.meta.env.VITE_VAPID_PUBLIC_KEY === '')
+      console.log('瀏覽器:', navigator.userAgent)
+      
+      // 使用 Safari 相容的方法獲取 VAPID 公鑰
+      const envVapidKey = this.getEnvironmentVariable('VITE_VAPID_PUBLIC_KEY')
+      console.log('🔍 使用 Safari 相容方法獲取的公鑰:', envVapidKey)
+      
+      // 取得 VAPID 公鑰（優先使用環境變數，否則使用預設值）
+      const vapidPublicKey = envVapidKey || 
         '***REMOVED***'
       
       // 🔍 調試信息：印出當前使用的公鑰
       console.log('🔍 VAPID 公鑰調試信息:')
-      console.log('原始公鑰:', vapidPublicKey)
+      console.log('最終使用的公鑰:', vapidPublicKey)
       console.log('公鑰長度:', vapidPublicKey.length, '字符')
       console.log('環境變數來源:', import.meta.env.VITE_VAPID_PUBLIC_KEY ? '環境變數' : '預設值')
       

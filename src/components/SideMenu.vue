@@ -42,6 +42,26 @@
         <div class="app-info">
           <p>Watch It</p>
           <small>價格監控工具</small>
+          <div class="version-info">
+            <span class="version-label">版本</span>
+            <span class="version-number">{{ appVersion }}</span>
+            <span
+              v-if="hasUpdate"
+              class="update-badge"
+              >有更新</span
+            >
+          </div>
+          <div
+            v-if="hasUpdate"
+            class="update-info"
+          >
+            <button
+              @click="checkForUpdate"
+              class="update-btn"
+            >
+              🔄 檢查更新
+            </button>
+          </div>
         </div>
       </div>
     </div>
@@ -49,10 +69,19 @@
 </template>
 
 <script setup>
-import { computed } from 'vue';
+import { computed, ref, onMounted } from 'vue';
 import { useWatchlistStore } from '../stores/watchlist.js';
 
 const watchlistStore = useWatchlistStore();
+
+// 版本相關狀態
+const appVersion = ref(
+  import.meta.env.VITE_APP_VERSION ||
+    window.__ENV__?.VITE_APP_VERSION ||
+    '1.1.0'
+);
+const hasUpdate = ref(false);
+const lastCheckTime = ref(null);
 
 // Props
 const props = defineProps({
@@ -107,6 +136,83 @@ const selectTab = (tabId) => {
   emit('select-tab', tabId);
   closeMenu();
 };
+
+// 檢查更新
+const checkForUpdate = async () => {
+  try {
+    console.log('🔄 檢查應用程式更新***REMOVED***');
+
+    // 模擬檢查更新（實際應用中可以從 API 獲取最新版本）
+    const currentVersion = appVersion.value;
+    const latestVersion = '1.1.0'; // 這裡可以從 API 獲取
+
+    // 比較版本號
+    const isNewer = compareVersions(latestVersion, currentVersion) > 0;
+
+    if (isNewer) {
+      hasUpdate.value = true;
+      console.log(`📱 發現新版本: ${latestVersion} (當前: ${currentVersion})`);
+
+      // 顯示更新提示
+      if (
+        confirm(`發現新版本 ${latestVersion}，是否重新載入頁面以獲取更新？`)
+      ) {
+        window.location.reload();
+      }
+    } else {
+      hasUpdate.value = false;
+      console.log('✅ 已是最新版本');
+      alert('已是最新版本！');
+    }
+
+    // 記錄檢查時間
+    lastCheckTime.value = new Date().toISOString();
+    localStorage.setItem('lastUpdateCheck', lastCheckTime.value);
+  } catch (error) {
+    console.error('❌ 檢查更新失敗:', error);
+    alert('檢查更新失敗，請稍後再試');
+  }
+};
+
+// 版本號比較函數
+const compareVersions = (version1, version2) => {
+  const v1parts = version1.split('.').map(Number);
+  const v2parts = version2.split('.').map(Number);
+
+  for (let i = 0; i < Math.max(v1parts.length, v2parts.length); i++) {
+    const v1part = v1parts[i] || 0;
+    const v2part = v2parts[i] || 0;
+
+    if (v1part > v2part) return 1;
+    if (v1part < v2part) return -1;
+  }
+
+  return 0;
+};
+
+// 初始化版本檢查
+const initializeVersionCheck = () => {
+  // 從 localStorage 獲取上次檢查時間
+  const lastCheck = localStorage.getItem('lastUpdateCheck');
+  if (lastCheck) {
+    lastCheckTime.value = lastCheck;
+
+    // 如果超過 24 小時未檢查，自動檢查更新
+    const hoursSinceLastCheck =
+      (Date.now() - new Date(lastCheck).getTime()) / (1000 * 60 * 60);
+    if (hoursSinceLastCheck > 24) {
+      checkForUpdate();
+    }
+  } else {
+    // 首次使用，檢查更新
+    checkForUpdate();
+  }
+};
+
+// 組件掛載時初始化
+onMounted(() => {
+  initializeVersionCheck();
+});
 </script>
 
 <style scoped>
@@ -308,6 +414,81 @@ const selectTab = (tabId) => {
 .app-info small {
   color: var(--text-secondary);
   font-size: 12px;
+}
+
+/* 版本資訊 */
+.version-info {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 8px;
+  padding: 6px 12px;
+  background: rgba(0, 217, 255, 0.1);
+  border: 1px solid rgba(0, 217, 255, 0.3);
+  border-radius: 12px;
+  font-size: 11px;
+}
+
+.version-label {
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
+.version-number {
+  color: var(--accent-cyan);
+  font-weight: 700;
+  font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Roboto Mono', monospace;
+}
+
+.update-badge {
+  background: var(--gradient-danger);
+  color: var(--text-bright);
+  font-size: 9px;
+  font-weight: 700;
+  padding: 2px 6px;
+  border-radius: 8px;
+  border: 1px solid var(--danger);
+  box-shadow: 0 0 8px rgba(255, 71, 87, 0.4);
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
+}
+
+/* 更新資訊 */
+.update-info {
+  margin-top: 8px;
+  text-align: center;
+}
+
+.update-btn {
+  background: linear-gradient(135deg, var(--accent-cyan), var(--accent-blue));
+  color: var(--text-bright);
+  border: none;
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 8px rgba(0, 217, 255, 0.3);
+}
+
+.update-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 217, 255, 0.5);
+}
+
+.update-btn:active {
+  transform: translateY(0);
 }
 
 /* 響應式設計 */
