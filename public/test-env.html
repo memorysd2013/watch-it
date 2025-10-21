@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>環境變數測試</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #1a1a1a;
+            color: #fff;
+        }
+        .test-section {
+            background: #2a2a2a;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 8px;
+            border-left: 4px solid #00d9ff;
+        }
+        pre {
+            background: #000;
+            color: #00ff00;
+            padding: 15px;
+            border-radius: 5px;
+            overflow-x: auto;
+            font-size: 12px;
+        }
+        button {
+            background: #00d9ff;
+            color: #000;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+    </style>
+</head>
+<body>
+    <h1>🔍 環境變數測試工具</h1>
+    
+    <div class="test-section">
+        <h3>📱 瀏覽器資訊</h3>
+        <div id="browser-info"></div>
+    </div>
+    
+    <div class="test-section">
+        <h3>🔧 環境變數測試</h3>
+        <button onclick="testEnvironmentVariables()">測試環境變數</button>
+        <button onclick="testNotificationService()">測試通知服務</button>
+        <div id="env-results"></div>
+    </div>
+    
+    <div class="test-section">
+        <h3>📋 詳細日誌</h3>
+        <pre id="debug-log"></pre>
+    </div>
+
+    <script>
+        function detectBrowser() {
+            const userAgent = navigator.userAgent;
+            return {
+                userAgent,
+                isSafari: /Safari/.test(userAgent) && !/Chrome/.test(userAgent),
+                isIOS: /iPhone|iPad|iPod/.test(userAgent),
+                isSafariMobile: /iPhone|iPad|iPod/.test(userAgent) && /Safari/.test(userAgent) && !/Chrome/.test(userAgent)
+            };
+        }
+        
+        function log(message) {
+            const logElement = document.getElementById('debug-log');
+            const timestamp = new Date().toLocaleTimeString();
+            logElement.textContent += `[${timestamp}] ${message}\n`;
+            console.log(message);
+        }
+        
+        function testEnvironmentVariables() {
+            log('🔍 開始測試環境變數...');
+            
+            const browser = detectBrowser();
+            document.getElementById('browser-info').innerHTML = `
+                <p><strong>User Agent:</strong> ${browser.userAgent}</p>
+                <p><strong>Safari:</strong> ${browser.isSafari ? '✅' : '❌'}</p>
+                <p><strong>iOS:</strong> ${browser.isIOS ? '✅' : '❌'}</p>
+                <p><strong>Safari Mobile:</strong> ${browser.isSafariMobile ? '✅' : '❌'}</p>
+            `;
+            
+            // 測試各種環境變數獲取方法
+            const testKey = 'VITE_VAPID_PUBLIC_KEY';
+            const nonViteKey = 'VAPID_PUBLIC_KEY';
+            
+            log(`📋 測試鍵值: ${testKey}`);
+            log(`📋 非 VITE_ 鍵值: ${nonViteKey}`);
+            
+            // 方法 1: import.meta.env
+            try {
+                const viteValue = import.meta.env[testKey];
+                const nonViteValue = import.meta.env[nonViteKey];
+                log(`📋 import.meta.env[${testKey}]: ${viteValue || 'undefined'}`);
+                log(`📋 import.meta.env[${nonViteKey}]: ${nonViteValue || 'undefined'}`);
+            } catch (e) {
+                log(`❌ import.meta.env 錯誤: ${e.message}`);
+            }
+            
+            // 方法 2: window.__ENV__
+            if (window.__ENV__) {
+                log(`📋 window.__ENV__ 存在: ✅`);
+                log(`📋 window.__ENV__[${testKey}]: ${window.__ENV__[testKey] || 'undefined'}`);
+                log(`📋 window.__ENV__[${nonViteKey}]: ${window.__ENV__[nonViteKey] || 'undefined'}`);
+            } else {
+                log(`❌ window.__ENV__ 不存在`);
+            }
+            
+            // 方法 3: localStorage
+            const storedVite = localStorage.getItem(testKey);
+            const storedNonVite = localStorage.getItem(nonViteKey);
+            log(`📋 localStorage[${testKey}]: ${storedVite || 'undefined'}`);
+            log(`📋 localStorage[${nonViteKey}]: ${storedNonVite || 'undefined'}`);
+            
+            // 總結
+            const results = {
+                'import.meta.env[VITE_VAPID_PUBLIC_KEY]': import.meta.env[testKey] || 'undefined',
+                'import.meta.env[VAPID_PUBLIC_KEY]': import.meta.env[nonViteKey] || 'undefined',
+                'window.__ENV__[VITE_VAPID_PUBLIC_KEY]': window.__ENV__?.[testKey] || 'undefined',
+                'window.__ENV__[VAPID_PUBLIC_KEY]': window.__ENV__?.[nonViteKey] || 'undefined',
+                'localStorage[VITE_VAPID_PUBLIC_KEY]': storedVite || 'undefined',
+                'localStorage[VAPID_PUBLIC_KEY]': storedNonVite || 'undefined'
+            };
+            
+            document.getElementById('env-results').innerHTML = `
+                <h4>測試結果:</h4>
+                <pre>${JSON.stringify(results, null, 2)}</pre>
+            `;
+        }
+        
+        async function testNotificationService() {
+            log('🔔 測試通知服務...');
+            
+            try {
+                // 模擬通知服務的環境變數獲取邏輯
+                const testKey = 'VITE_VAPID_PUBLIC_KEY';
+                const nonViteKey = 'VAPID_PUBLIC_KEY';
+                
+                // 模擬 getEnvironmentVariable 函數
+                function getEnvironmentVariable(key) {
+                    const standardValue = import.meta.env[key];
+                    const nonViteValue = import.meta.env[key.replace('VITE_', '')];
+                    const windowValue = window.__ENV__?.[key] || window.__ENV__?.[key.replace('VITE_', '')];
+                    const storedValue = localStorage.getItem(key) || localStorage.getItem(key.replace('VITE_', ''));
+                    
+                    const finalValue = standardValue || nonViteValue || windowValue || storedValue;
+                    
+                    log(`🔍 獲取 ${key}:`);
+                    log(`  - 標準值: ${standardValue || 'undefined'}`);
+                    log(`  - 非 VITE_ 值: ${nonViteValue || 'undefined'}`);
+                    log(`  - window 值: ${windowValue || 'undefined'}`);
+                    log(`  - localStorage 值: ${storedValue || 'undefined'}`);
+                    log(`  - 最終值: ${finalValue || 'undefined'}`);
+                    
+                    return finalValue;
+                }
+                
+                const vapidKey = getEnvironmentVariable(testKey);
+                
+                if (vapidKey && vapidKey !== 'undefined') {
+                    log(`✅ VAPID 公鑰獲取成功: ${vapidKey.substring(0, 20)}...`);
+                    
+                    // 測試公鑰格式
+                    try {
+                        const decoded = Uint8Array.from(atob(vapidKey), c => c.charCodeAt(0));
+                        if (decoded.length === 65 && decoded[0] === 0x04) {
+                            log(`✅ VAPID 公鑰格式正確 (65 bytes, 首字節: 0x04)`);
+                        } else {
+                            log(`❌ VAPID 公鑰格式錯誤 (長度: ${decoded.length}, 首字節: 0x${decoded[0].toString(16)})`);
+                        }
+                    } catch (e) {
+                        log(`❌ VAPID 公鑰解碼失敗: ${e.message}`);
+                    }
+                } else {
+                    log(`❌ VAPID 公鑰獲取失敗`);
+                }
+                
+            } catch (error) {
+                log(`❌ 通知服務測試失敗: ${error.message}`);
+            }
+        }
+        
+        // 頁面載入時自動測試
+        document.addEventListener('DOMContentLoaded', () => {
+            log('🚀 頁面載入完成，開始自動測試...');
+            testEnvironmentVariables();
+        });
+    </script>
+</body>
+</html>
