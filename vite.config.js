@@ -5,11 +5,37 @@ import vue from '@vitejs/plugin-vue'
 import vueDevTools from 'vite-plugin-vue-devtools'
 import { VitePWA } from 'vite-plugin-pwa'
 
+// Safari 手機瀏覽器環境變數注入插件
+function safariEnvPlugin() {
+  return {
+    name: 'safari-env-injection',
+    transformIndexHtml(html) {
+      // 在 HTML 中注入環境變數到 window 物件
+      const envScript = `
+        <script>
+          // Safari 手機瀏覽器環境變數注入
+          window.__ENV__ = {
+            VITE_VAPID_PUBLIC_KEY: '${process.env.VITE_VAPID_PUBLIC_KEY || ''}',
+            VITE_ALPHA_VANTAGE_API_KEY: '${process.env.VITE_ALPHA_VANTAGE_API_KEY || ''}',
+            VITE_FREECURRENCY_API_KEY: '${process.env.VITE_FREECURRENCY_API_KEY || ''}',
+            VITE_VAPID_EMAIL: '${process.env.VITE_VAPID_EMAIL || ''}',
+            VITE_APP_URL: '${process.env.VITE_APP_URL || ''}',
+            VITE_APP_VERSION: '${process.env.npm_package_version || '1.1.0'}'
+          };
+          console.log('🔧 Safari 環境變數已注入:', window.__ENV__);
+        </script>
+      `
+      return html.replace('<head>', `<head>${envScript}`)
+    }
+  }
+}
+
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [
     vue(),
     vueDevTools(),
+    safariEnvPlugin(), // Safari 手機瀏覽器環境變數注入
     VitePWA({
       registerType: 'autoUpdate',
       includeAssets: ['favicon.ico', 'icons/*.png'],
