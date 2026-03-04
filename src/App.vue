@@ -2,13 +2,16 @@
 import { onMounted } from 'vue';
 import TabsContainer from './components/layout/TabsContainer.vue';
 import { useWatchlistStore } from './stores/watchlist.js';
+import { useAssetAllocationStore } from './stores/assetAllocation.js';
 import notificationService from './services/notification.js';
 
 const watchlistStore = useWatchlistStore();
+const assetAllocationStore = useAssetAllocationStore();
 
 onMounted(async () => {
   // 載入本地儲存的資料
   watchlistStore.loadFromLocalStorage();
+  assetAllocationStore.loadFromLocalStorage();
   watchlistStore.loadNotificationsState();
 
   // 初始化通知服務
@@ -18,21 +21,6 @@ onMounted(async () => {
 
 <template>
   <div class="app">
-    <header class="app-header">
-      <div class="header-content">
-        <div class="logo-section">
-          <h1 class="app-title">📊 Watch It</h1>
-          <p class="app-subtitle">股票與加密貨幣價格監控</p>
-        </div>
-        <div
-          class="header-stats"
-          v-if="watchlistStore.getItemCount > 0"
-        >
-          <span class="stat">監控項目: {{ watchlistStore.getItemCount }}</span>
-        </div>
-      </div>
-    </header>
-
     <main class="app-main">
       <div class="container">
         <!-- 分頁容器 -->
@@ -41,10 +29,7 @@ onMounted(async () => {
     </main>
 
     <footer class="app-footer">
-      <div class="footer-content">
-        <p>&copy; 2024 Watch It. 股票與加密貨幣價格監控工具</p>
-        <div class="footer-links"></div>
-      </div>
+      <div class="footer-content"></div>
     </footer>
   </div>
 </template>
@@ -55,31 +40,6 @@ onMounted(async () => {
   display: flex;
   flex-direction: column;
   background: var(--gradient-bg);
-}
-
-.app-header {
-  background: rgba(13, 17, 36, 0.95);
-  backdrop-filter: blur(20px);
-  border-bottom: 1px solid var(--border-color);
-  padding: 20px 0;
-  box-shadow: var(--shadow-md), 0 1px 0 var(--border-glow);
-  position: relative;
-}
-
-.app-header::after {
-  content: '';
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  height: 1px;
-  background: linear-gradient(
-    90deg,
-    transparent 0%,
-    var(--accent-cyan) 50%,
-    transparent 100%
-  );
-  opacity: 0.3;
 }
 
 .header-content {
@@ -132,7 +92,9 @@ onMounted(async () => {
   border-radius: 20px;
   font-size: 14px;
   font-weight: 700;
-  box-shadow: var(--shadow-sm), 0 0 15px rgba(0, 255, 136, 0.3);
+  box-shadow:
+    var(--shadow-sm),
+    0 0 15px rgba(0, 255, 136, 0.3);
   border: 1px solid rgba(0, 255, 136, 0.3);
 }
 

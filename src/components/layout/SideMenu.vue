@@ -124,6 +124,12 @@ const tabs = computed(() => [
     icon: '📊',
     badge: watchlistStore.getItemCount > 0 ? watchlistStore.getItemCount : null,
   },
+  {
+    id: 'asset-allocation',
+    label: '資產配置',
+    icon: '📈',
+    badge: null,
+  },
 ]);
 
 // 關閉選單
