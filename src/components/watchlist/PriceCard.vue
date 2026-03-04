@@ -102,7 +102,7 @@
 
 <script setup>
 import { ref } from 'vue';
-import { useWatchlistStore } from '../stores/watchlist.js';
+import { useWatchlistStore } from '../../stores/watchlist.js';
 
 const props = defineProps({
   item: {

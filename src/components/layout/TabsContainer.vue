@@ -36,13 +36,13 @@
 
 <script setup>
 import { ref, computed, watch, onMounted } from 'vue';
-import { useWatchlistStore } from '../stores/watchlist.js';
+import { useWatchlistStore } from '../../stores/watchlist.js';
 import AppHeader from './AppHeader.vue';
 import SideMenu from './SideMenu.vue';
-import SearchForm from './SearchForm.vue';
-import NotificationSettings from './NotificationSettings.vue';
-import ExchangeRateTab from './ExchangeRateTab.vue';
-import Watchlist from './Watchlist.vue';
+import SearchForm from '../watchlist/SearchForm.vue';
+import NotificationSettings from '../notification/NotificationSettings.vue';
+import ExchangeRateTab from '../exchange-rate/ExchangeRateTab.vue';
+import Watchlist from '../watchlist/Watchlist.vue';
 
 const watchlistStore = useWatchlistStore();
 

@@ -157,8 +157,8 @@
 
 <script setup>
 import { ref, reactive, computed, onMounted } from 'vue';
-import { useWatchlistStore } from '../stores/watchlist.js';
-import notificationService from '../services/notification.js';
+import { useWatchlistStore } from '../../stores/watchlist.js';
+import notificationService from '../../services/notification.js';
 
 const watchlistStore = useWatchlistStore();
 

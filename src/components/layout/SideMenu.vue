@@ -70,7 +70,7 @@
 
 <script setup>
 import { computed, ref, onMounted } from 'vue';
-import { useWatchlistStore } from '../stores/watchlist.js';
+import { useWatchlistStore } from '../../stores/watchlist.js';
 
 const watchlistStore = useWatchlistStore();
 
