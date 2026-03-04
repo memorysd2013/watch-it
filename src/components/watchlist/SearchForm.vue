@@ -97,8 +97,8 @@
 
 <script setup>
 import { ref, reactive, watch } from 'vue';
-import { useWatchlistStore } from '../stores/watchlist.js';
-import { cryptoAPI } from '../services/api.js';
+import { useWatchlistStore } from '../../stores/watchlist.js';
+import { cryptoAPI } from '../../services/api.js';
 
 const watchlistStore = useWatchlistStore();
 

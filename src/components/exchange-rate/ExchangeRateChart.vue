@@ -127,7 +127,7 @@
 import { ref, onMounted, onUnmounted, watch, nextTick } from 'vue';
 import { Chart, registerables } from 'chart.js';
 import zoomPlugin from 'chartjs-plugin-zoom';
-import { exchangeRateAPI } from '../services/api.js';
+import { exchangeRateAPI } from '../../services/api.js';
 
 Chart.register(...registerables, zoomPlugin);
 

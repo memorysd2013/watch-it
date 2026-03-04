@@ -91,7 +91,7 @@
 
 <script setup>
 import { ref, computed, onMounted } from 'vue';
-import { useWatchlistStore } from '../stores/watchlist.js';
+import { useWatchlistStore } from '../../stores/watchlist.js';
 import PriceCard from './PriceCard.vue';
 
 const watchlistStore = useWatchlistStore();

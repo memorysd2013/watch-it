@@ -1,6 +1,6 @@
 <script setup>
 import { onMounted } from 'vue';
-import TabsContainer from './components/TabsContainer.vue';
+import TabsContainer from './components/layout/TabsContainer.vue';
 import { useWatchlistStore } from './stores/watchlist.js';
 import notificationService from './services/notification.js';
 

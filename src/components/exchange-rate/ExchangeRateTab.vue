@@ -213,7 +213,7 @@
 
 <script setup>
 import { ref, onMounted, onUnmounted } from 'vue';
-import { exchangeRateAPI } from '../services/api.js';
+import { exchangeRateAPI } from '../../services/api.js';
 import ExchangeRateChart from './ExchangeRateChart.vue';
 
 // 狀態
