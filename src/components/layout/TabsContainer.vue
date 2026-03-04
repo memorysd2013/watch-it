@@ -29,6 +29,9 @@
 
         <!-- 監控清單 -->
         <Watchlist v-if="activeTab === 'watchlist'" />
+
+        <!-- 資產配置 -->
+        <AssetAllocationTab v-if="activeTab === 'asset-allocation'" />
       </div>
     </main>
   </div>
@@ -43,6 +46,7 @@ import SearchForm from '../watchlist/SearchForm.vue';
 import NotificationSettings from '../notification/NotificationSettings.vue';
 import ExchangeRateTab from '../exchange-rate/ExchangeRateTab.vue';
 import Watchlist from '../watchlist/Watchlist.vue';
+import AssetAllocationTab from '../asset-allocation/AssetAllocationTab.vue';
 
 const watchlistStore = useWatchlistStore();
 
@@ -67,7 +71,7 @@ watch(
     else if (oldCount > 0 && newCount === 0) {
       activeTab.value = 'add';
     }
-  }
+  },
 );
 
 // 側邊選單控制方法
