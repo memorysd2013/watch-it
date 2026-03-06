@@ -213,23 +213,23 @@
 
 <script setup>
 import { ref, onMounted, onUnmounted } from 'vue';
-import { exchangeRateAPI } from '../../services/api.js';
+import { storeToRefs } from 'pinia';
+import { useExchangeRateStore } from '../../stores/exchangeRate.js';
 import ExchangeRateChart from './ExchangeRateChart.vue';
+
+const exchangeRateStore = useExchangeRateStore();
+const { usdTwdRate, lastUpdatedAt } = storeToRefs(exchangeRateStore);
+const lastUpdated = lastUpdatedAt;
 
 // 狀態
 const loading = ref(false);
 const error = ref('');
-const usdTwdRate = ref(0);
-const lastUpdated = ref('');
 const usdAmount = ref(1);
 const twdAmount = ref(0);
 const showDataInfo = ref(false);
 
 // 快速計算金額
 const quickAmounts = [1, 10, 100, 1000, 10000];
-
-// 更新間隔
-let updateInterval = null;
 
 // 格式化匯率
 const formatRate = (rate) => {
@@ -275,7 +275,7 @@ const formatTime = (timeString) => {
 
 // 計算台幣金額
 const calculateTwd = () => {
-  if (!usdAmount.value || isNaN(usdAmount.value)) {
+  if (!usdAmount.value || isNaN(usdAmount.value) || !usdTwdRate.value) {
     twdAmount.value = 0;
     return;
   }
@@ -284,7 +284,7 @@ const calculateTwd = () => {
 
 // 計算美金金額
 const calculateUsd = () => {
-  if (!twdAmount.value || isNaN(twdAmount.value)) {
+  if (!twdAmount.value || isNaN(twdAmount.value) || !usdTwdRate.value) {
     usdAmount.value = 0;
     return;
   }
@@ -297,17 +297,13 @@ const setUsdAmount = (amount) => {
   calculateTwd();
 };
 
-// 更新匯率
+// 更新匯率（取得後會自動存入 localStorage）
 const refreshRates = async () => {
   loading.value = true;
   error.value = '';
 
   try {
-    const rateData = await exchangeRateAPI.getUSDTWDRate();
-    usdTwdRate.value = rateData.rate;
-    lastUpdated.value = new Date().toISOString();
-
-    // 重新計算金額
+    await exchangeRateStore.fetchUsdTwdRate();
     calculateTwd();
   } catch (err) {
     error.value = '更新匯率失敗，請稍後再試';
@@ -320,17 +316,10 @@ const refreshRates = async () => {
 // 初始化
 onMounted(async () => {
   await refreshRates();
-
-  // 設定自動更新 (每5分鐘)
-  updateInterval = setInterval(refreshRates, 5 * 60 * 1000);
 });
 
-// 清理
-onUnmounted(() => {
-  if (updateInterval) {
-    clearInterval(updateInterval);
-  }
-});
+// 清理（保留以備未來使用）
+onUnmounted(() => {});
 </script>
 
 <style scoped>

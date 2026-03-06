@@ -32,6 +32,15 @@ export const useAssetAllocationStore = defineStore('assetAllocation', {
       return ((subItem.amount || 0) / assetItemTotal) * 100;
     },
 
+    getSubItemPercentOfTotal: (state) => (subItem) => {
+      const total = state.assetItems.reduce((sum, item) => {
+        const itemTotal = item.subItems?.reduce((s, sub) => s + (sub.amount || 0), 0) || 0;
+        return sum + itemTotal;
+      }, 0);
+      if (!total || total <= 0) return 0;
+      return ((subItem.amount || 0) / total) * 100;
+    },
+
     getAssetItemPercent: (state) => (assetItem) => {
       const total = state.assetItems.reduce((sum, item) => {
         const itemTotal = item.subItems?.reduce((s, sub) => s + (sub.amount || 0), 0) || 0;

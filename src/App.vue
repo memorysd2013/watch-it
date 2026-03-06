@@ -3,15 +3,18 @@ import { onMounted } from 'vue';
 import TabsContainer from './components/layout/TabsContainer.vue';
 import { useWatchlistStore } from './stores/watchlist.js';
 import { useAssetAllocationStore } from './stores/assetAllocation.js';
+import { useExchangeRateStore } from './stores/exchangeRate.js';
 import notificationService from './services/notification.js';
 
 const watchlistStore = useWatchlistStore();
 const assetAllocationStore = useAssetAllocationStore();
+const exchangeRateStore = useExchangeRateStore();
 
 onMounted(async () => {
   // 載入本地儲存的資料
   watchlistStore.loadFromLocalStorage();
   assetAllocationStore.loadFromLocalStorage();
+  exchangeRateStore.loadFromLocalStorage();
   watchlistStore.loadNotificationsState();
 
   // 初始化通知服務
