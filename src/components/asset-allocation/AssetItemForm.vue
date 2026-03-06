@@ -31,7 +31,7 @@
           />
         </div>
         <div class="form-group">
-          <label for="asset-target">預設比例（選填，0–100%）</label>
+          <label for="asset-target">目標比例（選填，0–100%）</label>
           <input
             id="asset-target"
             v-model="formTargetPercent"
@@ -87,17 +87,18 @@ watch(
   () => {
     formName.value = props.editItem?.name ?? '';
     formTargetPercent.value =
-      props.editItem?.targetPercent != null ? String(props.editItem.targetPercent) : '';
+      props.editItem?.targetPercent != null
+        ? String(props.editItem.targetPercent)
+        : '';
   },
-  { immediate: true }
+  { immediate: true },
 );
 
 const submit = () => {
   const name = formName.value?.trim();
   if (!name) return;
   const raw = formTargetPercent.value;
-  const targetPercent =
-    raw != null && raw !== '' ? String(raw) : undefined;
+  const targetPercent = raw != null && raw !== '' ? String(raw) : undefined;
   emit('submit', { name, targetPercent });
 };
 
@@ -123,7 +124,9 @@ const cancel = () => {
   background: var(--card-bg);
   border-radius: 16px;
   border: 1px solid var(--border-color);
-  box-shadow: var(--shadow-lg), 0 0 30px rgba(0, 217, 255, 0.15);
+  box-shadow:
+    var(--shadow-lg),
+    0 0 30px rgba(0, 217, 255, 0.15);
   max-width: 400px;
   width: 100%;
   overflow: hidden;

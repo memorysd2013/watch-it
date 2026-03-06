@@ -37,7 +37,7 @@ Chart.register(ArcElement, Tooltip, Legend, DoughnutController);
 
 const CHART_COLORS = [
   '#00d9ff', // accent-cyan
-  '#9c27b0', // accent-purple
+  '#ffb74d', // accent-amber
   '#00ff88', // success
   '#ffa502', // warning
   '#2196f3', // accent-blue
@@ -103,13 +103,13 @@ function buildAssetItemData() {
 }
 
 function buildSubItemData(assetItem) {
-  const subs = (assetItem.subItems || []).filter((s) => (s.amount || 0) > 0);
+  const subs = (assetItem.subItems || []).filter((s) => store.getSubAmountInTWD(s) > 0);
 
   return {
     labels: subs.map((s) => s.name),
     datasets: [
       {
-        data: subs.map((s) => s.amount),
+        data: subs.map((s) => store.getSubAmountInTWD(s)),
         backgroundColor: subs.map((_, idx) => CHART_COLORS[idx % CHART_COLORS.length]),
         borderColor: 'rgba(20, 25, 45, 0.9)',
         borderWidth: 2,
@@ -159,7 +159,7 @@ function createChart() {
                 minimumFractionDigits: 0,
                 maximumFractionDigits: 2,
               });
-              return ` ${context.label}: ${amount} (${percent}%)`;
+              return ` ${context.label}: ${amount} TWD (${percent}%)`;
             },
           },
         },

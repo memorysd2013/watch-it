@@ -1,13 +1,19 @@
 <template>
   <div
     class="asset-card"
-    @click="selectedSubId = null"
+    @click="clearSelections"
   >
-    <div class="card-header">
+    <div
+      class="card-header"
+      @click.stop="toggleCardSelection"
+    >
       <div class="asset-info">
         <h3 class="asset-name">{{ assetItem.name }}</h3>
         <div class="asset-summary">
-          <span class="total-amount">{{ formatAmount(itemTotal) }}</span>
+          <span class="total-amount"
+            >{{ formatAmount(itemTotal) }}
+            <span class="currency-suffix">TWD</span></span
+          >
           <span
             v-if="totalAmount > 0"
             class="percent-badge"
@@ -24,7 +30,11 @@
           </span>
         </div>
       </div>
-      <div class="card-actions">
+      <div
+        v-if="cardSelected"
+        class="card-actions-float"
+        @click.stop
+      >
         <button
           class="action-btn edit-btn"
           @click="$emit('edit-asset', assetItem)"
@@ -72,7 +82,10 @@
           @click.stop="toggleSubSelection(sub.id)"
         >
           <span class="col-name">{{ sub.name }}</span>
-          <span class="col-amount">{{ formatAmount(sub.amount) }}</span>
+          <span class="col-amount"
+            >{{ formatAmount(getDisplayAmount(sub)) }}
+            {{ getDisplayCurrency(sub) === 'USD' ? 'USD' : 'TWD' }}</span
+          >
           <span class="col-percent">
             {{ totalAmount > 0 ? getSubPercentDisplay(sub) : '—' }}
           </span>
@@ -81,6 +94,16 @@
             class="sub-actions-float"
             @click.stop
           >
+            <button
+              class="sub-action-btn currency-toggle"
+              :title="
+                '切換顯示：' +
+                (getDisplayCurrency(sub) === 'USD' ? '改為 TWD' : '改為 USD')
+              "
+              @click="toggleSubDisplay(sub)"
+            >
+              {{ getDisplayCurrency(sub) === 'USD' ? 'USD' : 'TWD' }}
+            </button>
             <button
               class="sub-action-btn"
               @click="$emit('edit-sub', assetItem, sub)"
@@ -107,12 +130,6 @@
           >
             {{ getSubTargetDisplay(sub) }}
           </span>
-          <span
-            v-else
-            class="col-target col-target-empty"
-          >
-            預設對比：—
-          </span>
         </div>
       </div>
     </div>
@@ -120,20 +137,40 @@
     <div
       v-else
       class="empty-subs"
+      @click.stop="toggleCardSelection"
     >
-      <p>尚無子項目，點擊 ➕ 新增</p>
+      <p>尚無子項目，點擊此處或上方標題以顯示按鈕新增</p>
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref, computed } from 'vue';
+import { ref, computed, reactive } from 'vue';
 import { useAssetAllocationStore } from '../../stores/assetAllocation.js';
+import { useExchangeRateStore } from '../../stores/exchangeRate.js';
 
 const selectedSubId = ref(null);
+const cardSelected = ref(false);
+const subDisplayCurrency = reactive({});
+
+const clearSelections = () => {
+  selectedSubId.value = null;
+  cardSelected.value = false;
+};
+
+const toggleCardSelection = () => {
+  cardSelected.value = !cardSelected.value;
+  selectedSubId.value = null;
+};
 
 const toggleSubSelection = (id) => {
+  if (id) cardSelected.value = false;
   selectedSubId.value = selectedSubId.value === id ? null : id;
+};
+
+const toggleSubDisplay = (sub) => {
+  const current = subDisplayCurrency[sub.id] ?? sub.currency ?? 'TWD';
+  subDisplayCurrency[sub.id] = current === 'TWD' ? 'USD' : 'TWD';
 };
 
 const props = defineProps({
@@ -146,6 +183,7 @@ const props = defineProps({
 defineEmits(['edit-asset', 'add-sub', 'edit-sub']);
 
 const store = useAssetAllocationStore();
+const exchangeStore = useExchangeRateStore();
 
 const totalAmount = computed(() => store.totalAmount);
 const itemTotal = computed(() => store.getAssetItemTotal(props.assetItem));
@@ -172,8 +210,8 @@ const getAssetTargetDisplay = () => {
   const diff = current - target;
   if (Math.abs(diff) < 0.1) return ''; // 符合時不顯示
   return diff > 0
-    ? `預設 ${target}%，超出 ${diff.toFixed(1)}%`
-    : `預設 ${target}%，低於 ${Math.abs(diff).toFixed(1)}%`;
+    ? `目標 ${target}%，超出 ${diff.toFixed(1)}%`
+    : `目標 ${target}%，低於 ${Math.abs(diff).toFixed(1)}%`;
 };
 
 const getAssetTargetHintClass = () => {
@@ -192,8 +230,8 @@ const getSubTargetDisplay = (sub) => {
   const diff = current - target;
   if (Math.abs(diff) < 0.1) return ''; // 符合時不顯示
   return diff > 0
-    ? `預設 ${target}%，超出 ${diff.toFixed(1)}%`
-    : `預設 ${target}%，低於 ${Math.abs(diff).toFixed(1)}%`;
+    ? `目標 ${target}%，超出 ${diff.toFixed(1)}%`
+    : `目標 ${target}%，低於 ${Math.abs(diff).toFixed(1)}%`;
 };
 
 const getSubTargetHintClass = (sub) => {
@@ -203,6 +241,23 @@ const getSubTargetHintClass = (sub) => {
   const diff = current - target;
   if (Math.abs(diff) < 0.1) return 'target-match';
   return diff > 0 ? 'target-over' : 'target-under';
+};
+
+const getDisplayCurrency = (sub) => {
+  return subDisplayCurrency[sub.id] ?? sub.currency ?? 'TWD';
+};
+
+const getDisplayAmount = (sub) => {
+  const storedCurrency = sub.currency ?? 'TWD';
+  const displayCurrency = getDisplayCurrency(sub);
+  const amount = sub.amount ?? 0;
+  const rate = exchangeStore.effectiveRate;
+  if (displayCurrency === storedCurrency) return amount;
+  if (storedCurrency === 'TWD' && displayCurrency === 'USD')
+    return rate > 0 ? amount / rate : amount;
+  if (storedCurrency === 'USD' && displayCurrency === 'TWD')
+    return amount * rate;
+  return amount;
 };
 
 const formatAmount = (val) => {
@@ -239,7 +294,6 @@ const confirmRemoveSub = (sub) => {
   padding: 20px;
   box-shadow: var(--shadow-md), var(--shadow-glow);
   border: 1px solid var(--border-color);
-  border-left: 3px solid var(--accent-purple);
   transition: all 0.3s ease;
 }
 
@@ -247,13 +301,11 @@ const confirmRemoveSub = (sub) => {
   border-color: var(--border-glow);
   box-shadow:
     var(--shadow-lg),
-    0 0 25px rgba(156, 39, 176, 0.2);
+    0 0 25px rgba(0, 217, 255, 0.15);
 }
 
 .card-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
+  position: relative;
   margin-bottom: 16px;
 }
 
@@ -278,19 +330,41 @@ const confirmRemoveSub = (sub) => {
   text-shadow: 0 0 15px rgba(0, 217, 255, 0.3);
 }
 
+.currency-suffix {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-muted);
+  margin-left: 2px;
+}
+
 .percent-badge {
   padding: 4px 10px;
   border-radius: 12px;
   font-size: 12px;
   font-weight: 700;
-  background: rgba(156, 39, 176, 0.2);
-  color: var(--accent-purple);
-  border: 1px solid var(--accent-purple);
+  background: rgba(33, 150, 243, 0.15);
+  color: var(--accent-blue);
+  border: 1px solid rgba(33, 150, 243, 0.4);
 }
 
-.card-actions {
+.card-actions-float {
+  position: absolute;
+  top: 0;
+  right: 0;
   display: flex;
-  gap: 8px;
+  gap: 4px;
+  background: var(--card-bg);
+  padding: 4px 6px;
+  border-radius: 8px;
+  border: 1px solid var(--border-color);
+  box-shadow: var(--shadow-md);
+  z-index: 2;
+}
+
+.card-actions-float .action-btn {
+  width: 28px;
+  height: 28px;
+  font-size: 12px;
 }
 
 .action-btn {
@@ -347,6 +421,10 @@ const confirmRemoveSub = (sub) => {
 
 .asset-target-row .target-hint {
   display: inline-block;
+  padding: 0;
+  border: none;
+  background: none;
+  border-radius: 0;
 }
 
 .sub-items {
@@ -460,7 +538,7 @@ const confirmRemoveSub = (sub) => {
 }
 
 .target-under {
-  color: var(--accent-cyan);
+  color: var(--success);
   font-weight: 600;
 }
 
@@ -471,38 +549,16 @@ const confirmRemoveSub = (sub) => {
 
 .target-hint {
   font-size: 12px;
-  padding: 2px 8px;
-  border-radius: 8px;
 }
 
-.asset-summary .target-hint.target-over {
-  background: rgba(255, 165, 2, 0.15);
-  border: 1px solid var(--warning);
-}
-
-.asset-summary .target-hint.target-under {
-  background: rgba(0, 217, 255, 0.15);
-  border: 1px solid var(--accent-cyan);
-}
-
-.asset-summary .target-hint.target-match {
-  background: rgba(0, 255, 136, 0.15);
-  border: 1px solid var(--success);
-}
-
-.asset-target-row .target-hint.target-over {
-  background: rgba(255, 165, 2, 0.15);
-  border: 1px solid var(--warning);
-}
-
-.asset-target-row .target-hint.target-under {
-  background: rgba(0, 217, 255, 0.15);
-  border: 1px solid var(--accent-cyan);
-}
-
+.asset-summary .target-hint.target-over,
+.asset-summary .target-hint.target-under,
+.asset-summary .target-hint.target-match,
+.asset-target-row .target-hint.target-over,
+.asset-target-row .target-hint.target-under,
 .asset-target-row .target-hint.target-match {
-  background: rgba(0, 255, 136, 0.15);
-  border: 1px solid var(--success);
+  background: none;
+  border: none;
 }
 
 .sub-action-btn {
@@ -525,6 +581,12 @@ const confirmRemoveSub = (sub) => {
 .sub-action-btn.sub-remove:hover {
   background: rgba(255, 71, 87, 0.15);
   color: var(--danger);
+}
+
+.sub-action-btn.currency-toggle {
+  font-size: 10px;
+  padding: 4px 8px;
+  min-width: 36px;
 }
 
 .empty-subs {

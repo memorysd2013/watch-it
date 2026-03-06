@@ -24,8 +24,23 @@
           v-if="assetItems.length > 0"
           class="total-display"
         >
-          <span class="total-label">總資產</span>
+          <span class="total-label">總資產 (TWD)</span>
           <span class="total-value">{{ formatAmount(store.totalAmount) }}</span>
+        </div>
+        <div
+          v-if="!exchangeStore.isUsingApiRate"
+          class="default-rate-block"
+        >
+          <span class="default-rate-label">預設匯率 1 USD =</span>
+          <input
+            v-model.number="defaultRateInput"
+            type="number"
+            min="1"
+            step="0.01"
+            class="default-rate-input"
+            @blur="applyDefaultRate"
+          />
+          <span class="default-rate-unit">TWD</span>
         </div>
       </div>
     </div>
@@ -87,16 +102,26 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue';
+import { ref, computed, watch } from 'vue';
 import { useAssetAllocationStore } from '../../stores/assetAllocation.js';
+import { useExchangeRateStore } from '../../stores/exchangeRate.js';
 import AssetItemCard from './AssetItemCard.vue';
 import AssetAllocationChart from './AssetAllocationChart.vue';
 import AssetItemForm from './AssetItemForm.vue';
 import SubItemForm from './SubItemForm.vue';
 
 const store = useAssetAllocationStore();
+const exchangeStore = useExchangeRateStore();
 
 const assetItems = computed(() => store.getAllAssetItems);
+const defaultRateInput = ref(exchangeStore.defaultUsdTwdRate);
+
+watch(
+  () => exchangeStore.defaultUsdTwdRate,
+  (v) => {
+    defaultRateInput.value = v;
+  },
+);
 
 const showAssetForm = ref(false);
 const editingAssetItem = ref(null);
@@ -151,7 +176,12 @@ const openEditSub = (assetItem, subItem) => {
   showSubForm.value = true;
 };
 
-const onSubSubmit = ({ name, amount, targetPercent }) => {
+const applyDefaultRate = () => {
+  const n = Number(defaultRateInput.value);
+  if (!isNaN(n) && n > 0) exchangeStore.setDefaultRate(n);
+};
+
+const onSubSubmit = ({ name, amount, currency, targetPercent }) => {
   if (!editingAssetItemForSub.value) return;
 
   if (editingSubItem.value) {
@@ -161,6 +191,7 @@ const onSubSubmit = ({ name, amount, targetPercent }) => {
       name,
       amount,
       targetPercent,
+      currency,
     );
   } else {
     store.addSubItem(
@@ -168,6 +199,7 @@ const onSubSubmit = ({ name, amount, targetPercent }) => {
       name,
       amount,
       targetPercent,
+      currency,
     );
   }
   closeSubForm();
@@ -239,7 +271,44 @@ const closeSubForm = () => {
 .header-total {
   display: flex;
   align-items: center;
+  flex-wrap: wrap;
   gap: 16px;
+}
+
+.default-rate-block {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 14px;
+  background: rgba(255, 165, 2, 0.1);
+  border: 1px solid var(--warning);
+  border-radius: 10px;
+  font-size: 13px;
+}
+
+.default-rate-label {
+  color: var(--text-secondary);
+}
+
+.default-rate-input {
+  width: 72px;
+  padding: 6px 10px;
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  color: var(--text-bright);
+  font-size: 14px;
+  text-align: right;
+}
+
+.default-rate-input:focus {
+  outline: none;
+  border-color: var(--accent-cyan);
+}
+
+.default-rate-unit {
+  color: var(--text-muted);
+  font-size: 12px;
 }
 
 .total-display {
