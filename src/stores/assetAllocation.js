@@ -1,4 +1,5 @@
 import { defineStore } from 'pinia';
+import { useExchangeRateStore } from './exchangeRate.js';
 
 const STORAGE_KEY = 'watchit_asset_allocation';
 
@@ -6,6 +7,14 @@ function parseTargetPercent(val) {
   if (val == null || val === '') return undefined;
   const n = Number(val);
   return !isNaN(n) && n >= 0 && n <= 100 ? n : undefined;
+}
+
+/** 將子項目金額轉為 TWD 等價 */
+function subAmountInTWD(subItem, rate) {
+  const currency = subItem.currency ?? 'TWD';
+  const amount = subItem.amount ?? 0;
+  if (currency === 'TWD') return amount;
+  return amount * (rate ?? 31.5);
 }
 
 export const useAssetAllocationStore = defineStore('assetAllocation', {
@@ -17,37 +26,51 @@ export const useAssetAllocationStore = defineStore('assetAllocation', {
     getAllAssetItems: (state) => state.assetItems,
 
     totalAmount: (state) => {
+      const rate = useExchangeRateStore().effectiveRate;
       return state.assetItems.reduce((sum, item) => {
-        const itemTotal = item.subItems?.reduce((s, sub) => s + (sub.amount || 0), 0) || 0;
+        const itemTotal =
+          item.subItems?.reduce((s, sub) => s + subAmountInTWD(sub, rate), 0) || 0;
         return sum + itemTotal;
       }, 0);
     },
 
     getAssetItemTotal: () => (assetItem) => {
-      return assetItem.subItems?.reduce((sum, sub) => sum + (sub.amount || 0), 0) || 0;
+      const rate = useExchangeRateStore().effectiveRate;
+      return assetItem.subItems?.reduce((sum, sub) => sum + subAmountInTWD(sub, rate), 0) || 0;
+    },
+
+    getSubAmountInTWD: () => (subItem) => {
+      const rate = useExchangeRateStore().effectiveRate;
+      return subAmountInTWD(subItem, rate);
     },
 
     getSubItemPercent: () => (subItem, assetItemTotal) => {
       if (!assetItemTotal || assetItemTotal <= 0) return 0;
-      return ((subItem.amount || 0) / assetItemTotal) * 100;
+      const rate = useExchangeRateStore().effectiveRate;
+      return (subAmountInTWD(subItem, rate) / assetItemTotal) * 100;
     },
 
     getSubItemPercentOfTotal: (state) => (subItem) => {
+      const rate = useExchangeRateStore().effectiveRate;
       const total = state.assetItems.reduce((sum, item) => {
-        const itemTotal = item.subItems?.reduce((s, sub) => s + (sub.amount || 0), 0) || 0;
+        const itemTotal =
+          item.subItems?.reduce((s, sub) => s + subAmountInTWD(sub, rate), 0) || 0;
         return sum + itemTotal;
       }, 0);
       if (!total || total <= 0) return 0;
-      return ((subItem.amount || 0) / total) * 100;
+      return (subAmountInTWD(subItem, rate) / total) * 100;
     },
 
     getAssetItemPercent: (state) => (assetItem) => {
+      const rate = useExchangeRateStore().effectiveRate;
       const total = state.assetItems.reduce((sum, item) => {
-        const itemTotal = item.subItems?.reduce((s, sub) => s + (sub.amount || 0), 0) || 0;
+        const itemTotal =
+          item.subItems?.reduce((s, sub) => s + subAmountInTWD(sub, rate), 0) || 0;
         return sum + itemTotal;
       }, 0);
       if (!total || total <= 0) return 0;
-      const itemTotal = assetItem.subItems?.reduce((sum, sub) => sum + (sub.amount || 0), 0) || 0;
+      const itemTotal =
+        assetItem.subItems?.reduce((sum, sub) => sum + subAmountInTWD(sub, rate), 0) || 0;
       return (itemTotal / total) * 100;
     },
   },
@@ -79,7 +102,7 @@ export const useAssetAllocationStore = defineStore('assetAllocation', {
       this.saveToLocalStorage();
     },
 
-    addSubItem(assetItemId, name, amount, targetPercent) {
+    addSubItem(assetItemId, name, amount, targetPercent, currency = 'TWD') {
       const assetItem = this.assetItems.find((i) => i.id === assetItemId);
       if (!assetItem) return null;
       if (!assetItem.subItems) assetItem.subItems = [];
@@ -88,6 +111,7 @@ export const useAssetAllocationStore = defineStore('assetAllocation', {
         id: crypto.randomUUID?.() || Date.now().toString(),
         name: name?.trim() || '未命名',
         amount: Number(amount) || 0,
+        currency: currency === 'USD' ? 'USD' : 'TWD',
         targetPercent: parseTargetPercent(targetPercent),
       };
       assetItem.subItems.push(newSubItem);
@@ -95,7 +119,7 @@ export const useAssetAllocationStore = defineStore('assetAllocation', {
       return newSubItem;
     },
 
-    updateSubItem(assetItemId, subItemId, name, amount, targetPercent) {
+    updateSubItem(assetItemId, subItemId, name, amount, targetPercent, currency) {
       const assetItem = this.assetItems.find((i) => i.id === assetItemId);
       if (!assetItem?.subItems) return;
 
@@ -103,6 +127,7 @@ export const useAssetAllocationStore = defineStore('assetAllocation', {
       if (subItem) {
         subItem.name = name?.trim() ?? subItem.name;
         subItem.amount = Number(amount) ?? subItem.amount;
+        if (currency === 'USD' || currency === 'TWD') subItem.currency = currency;
         subItem.targetPercent = parseTargetPercent(targetPercent);
         this.saveToLocalStorage();
       }

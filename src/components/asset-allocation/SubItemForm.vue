@@ -32,18 +32,38 @@
         </div>
         <div class="form-group">
           <label for="sub-amount">金額</label>
-          <input
-            id="sub-amount"
-            v-model="formAmount"
-            type="number"
-            min="0"
-            step="0.01"
-            placeholder="0"
-            required
-          />
+          <div class="amount-row">
+            <input
+              id="sub-amount"
+              v-model="formAmount"
+              type="number"
+              min="0"
+              step="0.01"
+              placeholder="0"
+              required
+            />
+            <div class="currency-options">
+              <label class="currency-option">
+                <input
+                  v-model="formCurrency"
+                  type="radio"
+                  value="TWD"
+                />
+                <span>台幣 (TWD)</span>
+              </label>
+              <label class="currency-option">
+                <input
+                  v-model="formCurrency"
+                  type="radio"
+                  value="USD"
+                />
+                <span>美金 (USD)</span>
+              </label>
+            </div>
+          </div>
         </div>
         <div class="form-group">
-          <label for="sub-target">預設比例（選填，佔該資產 0–100%）</label>
+          <label for="sub-target">目標比例（選填，佔該資產 0–100%）</label>
           <input
             id="sub-target"
             v-model="formTargetPercent"
@@ -93,6 +113,7 @@ const emit = defineEmits(['submit', 'cancel']);
 const isEdit = computed(() => !!props.editSubItem);
 const formName = ref('');
 const formAmount = ref('');
+const formCurrency = ref('TWD');
 const formTargetPercent = ref('');
 
 watch(
@@ -100,10 +121,13 @@ watch(
   () => {
     formName.value = props.editSubItem?.name ?? '';
     formAmount.value = props.editSubItem?.amount ?? '';
+    formCurrency.value = props.editSubItem?.currency === 'USD' ? 'USD' : 'TWD';
     formTargetPercent.value =
-      props.editSubItem?.targetPercent != null ? String(props.editSubItem.targetPercent) : '';
+      props.editSubItem?.targetPercent != null
+        ? String(props.editSubItem.targetPercent)
+        : '';
   },
-  { immediate: true }
+  { immediate: true },
 );
 
 const submit = () => {
@@ -112,9 +136,9 @@ const submit = () => {
   if (!name) return;
   if (isNaN(amount) || amount < 0) return;
   const raw = formTargetPercent.value;
-  const targetPercent =
-    raw != null && raw !== '' ? String(raw) : undefined;
-  emit('submit', { name, amount, targetPercent });
+  const targetPercent = raw != null && raw !== '' ? String(raw) : undefined;
+  const currency = formCurrency.value === 'USD' ? 'USD' : 'TWD';
+  emit('submit', { name, amount, currency, targetPercent });
 };
 
 const cancel = () => {
@@ -139,7 +163,9 @@ const cancel = () => {
   background: var(--card-bg);
   border-radius: 16px;
   border: 1px solid var(--border-color);
-  box-shadow: var(--shadow-lg), 0 0 30px rgba(0, 217, 255, 0.15);
+  box-shadow:
+    var(--shadow-lg),
+    0 0 30px rgba(0, 217, 255, 0.15);
   max-width: 400px;
   width: 100%;
   overflow: hidden;
@@ -211,6 +237,35 @@ const cancel = () => {
 
 .form-group input::placeholder {
   color: var(--text-muted);
+}
+
+.amount-row {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.currency-options {
+  display: flex;
+  gap: 16px;
+}
+
+.currency-option {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  color: var(--text-secondary);
+  font-size: 14px;
+}
+
+.currency-option input {
+  width: auto;
+  padding: 0;
+}
+
+.currency-option:hover {
+  color: var(--text-bright);
 }
 
 .form-actions {
