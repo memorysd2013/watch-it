@@ -512,10 +512,25 @@ td {
 
 /* Desktop and mobile view toggling */
 .desktop-only {
-  display: block;
+  display: block !important;
 }
 
 .mobile-only {
-  display: none;
+  display: none !important;
+}
+
+/* Mobile responsive */
+@media (max-width: 768px) {
+  .view-header {
+    flex-direction: column;
+  }
+  
+  .desktop-only {
+    display: none !important;
+  }
+
+  .mobile-only {
+    display: block !important;
+  }
 }
 </style>
