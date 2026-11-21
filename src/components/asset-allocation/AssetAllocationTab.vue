@@ -372,9 +372,7 @@ const closeSubForm = () => {
 }
 
 .empty-icon {
-  font-size: 48px;
-  margin-bottom: 16px;
-  filter: drop-shadow(0 0 20px rgba(0, 217, 255, 0.3));
+  color: var(--text-muted);
 }
 
 .empty-state h3 {
