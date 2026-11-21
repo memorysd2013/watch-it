@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia'
-import { getPrice } from '../services/api.js'
+import { getPrice } from '../services/api/index.js'
 
 export const useWatchlistStore = defineStore('watchlist', {
   state: () => ({
