@@ -228,7 +228,7 @@ const cancel = () => {
 }
 
 .btn-submit {
-  background: linear-gradient(135deg, var(--accent-cyan), var(--accent-blue));
+  background: var(--accent);
   border: 1px solid var(--accent-cyan);
   color: var(--bg-primary);
 }
