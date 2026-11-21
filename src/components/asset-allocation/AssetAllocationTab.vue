@@ -378,15 +378,16 @@ const closeSubForm = () => {
 }
 
 .empty-state h3 {
-  margin: 0 0 8px 0;
-  color: var(--text-bright);
-  font-size: 20px;
+  margin: 0;
+  color: var(--text-primary);
+  font-size: var(--text-lg);
+  font-weight: var(--font-medium);
 }
 
 .empty-state p {
-  margin: 0 0 24px 0;
+  margin: 0;
   color: var(--text-secondary);
-  font-size: 14px;
+  font-size: var(--text-sm);
 }
 
 .add-first-btn {
