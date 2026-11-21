@@ -74,10 +74,11 @@ const isActive = (path) => route.path === path
 <style scoped>
 .tab-bar {
   display: flex;
-  /* Minimum 56px tap area + safe area */
-  min-height: 56px;
+  /* Total height: 56px tap area + safe area inset */
+  height: calc(var(--tabbar-h) + var(--sab));
   padding: 0;
-  padding-bottom: env(safe-area-inset-bottom);
+  padding-bottom: var(--sab);
+  box-sizing: border-box;
 }
 
 .tab-item {
@@ -92,6 +93,8 @@ const isActive = (path) => route.path === path
   font-size: var(--text-xs);
   transition: color var(--duration-fast) var(--ease);
   position: relative;
+  /* Fixed 56px height for tap area, above the inset */
+  height: var(--tabbar-h);
 }
 
 .tab-item.active {

@@ -45,8 +45,8 @@ const handleUndo = (toast) => {
 <style scoped>
 .toast-container {
   position: fixed;
-  bottom: calc(var(--space-6) + env(safe-area-inset-bottom));
-  right: calc(var(--space-6) + env(safe-area-inset-right));
+  bottom: calc(var(--space-6) + var(--sab));
+  right: calc(var(--space-6) + var(--sar));
   z-index: 1000;
   display: flex;
   flex-direction: column;
@@ -56,10 +56,10 @@ const handleUndo = (toast) => {
 
 @media (max-width: 768px) {
   .toast-container {
-    /* Position above mobile tab bar (56px) + safe area */
-    bottom: calc(56px + var(--space-6) + env(safe-area-inset-bottom));
-    left: calc(var(--space-4) + env(safe-area-inset-left));
-    right: calc(var(--space-4) + env(safe-area-inset-right));
+    /* Position above mobile tab bar + safe area */
+    bottom: calc(var(--tabbar-h) + var(--space-6) + var(--sab));
+    left: calc(var(--space-4) + var(--sal));
+    right: calc(var(--space-4) + var(--sar));
     max-width: none;
   }
 }

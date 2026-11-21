@@ -1,5 +1,14 @@
 /* Design Tokens - Quiet Terminal/Report Look */
 :root {
+  /* === Safe Area Insets === */
+  --sat: env(safe-area-inset-top, 0px);
+  --sab: env(safe-area-inset-bottom, 0px);
+  --sal: env(safe-area-inset-left, 0px);
+  --sar: env(safe-area-inset-right, 0px);
+  
+  /* === Layout Constants === */
+  --tabbar-h: 56px;
+  
   /* === Color System === */
   /* Dark theme - Graphite neutral ramp */
   --bg-deepest: #0f0f10;
