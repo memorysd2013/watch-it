@@ -360,17 +360,21 @@ const closeSubForm = () => {
 }
 
 .empty-state {
-  text-align: center;
-  padding: 60px 20px;
-  background: var(--card-bg);
-  border-radius: 16px;
-  border: 1px solid var(--border-color);
-  box-shadow: var(--shadow-md);
-  backdrop-filter: blur(10px);
+  max-width: 480px;
+  padding: var(--space-8);
+  background: var(--bg-raised);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-default);
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-3);
+  text-align: left;
 }
 
 .empty-icon {
   color: var(--text-muted);
+  flex-shrink: 0;
 }
 
 .empty-state h3 {
