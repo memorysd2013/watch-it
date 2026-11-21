@@ -64,7 +64,7 @@ const refreshAll = async () => {
 }
 
 const deleteItem = (item) => {
-  const deletedItem = { ... }
+  const deletedItem = { ...item }
   watchlistStore.removeItem(item.id)
   
   success('已刪除項目', {

@@ -4,7 +4,7 @@ import webpush from 'web-push'
 // 設定 VAPID 金鑰（從環境變數讀取）
 const vapidPublicKey = process.env.VITE_VAPID_PUBLIC_KEY || process.env.VAPID_PUBLIC_KEY
 const vapidPrivateKey = process.env.VAPID_PRIVATE_KEY
-const vapidEmail = process.env.VAPID_EMAIL || '***REMOVED***'
+const vapidEmail = process.env.VAPID_EMAIL || 'mailto:admin@example.com'
 
 if (!vapidPublicKey || !vapidPrivateKey) {
   console.warn('⚠️  警告: VAPID 密鑰未設定！請執行 "npm run generate-vapid" 生成密鑰')

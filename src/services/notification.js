@@ -253,7 +253,7 @@ class NotificationService {
       badge: '/favicon.ico',
       requireInteraction: false,
       silent: false,
-      ...
+      ...options
     }
 
     try {

@@ -92,7 +92,7 @@ export const useWatchlistStore = defineStore('watchlist', {
             
             // 更新股票/加密貨幣資料
             return {
-              ...,
+              ...item,
               currentPrice: priceData.price,
               change: priceData.change,
               changePercent: priceData.changePercent,
@@ -129,7 +129,7 @@ export const useWatchlistStore = defineStore('watchlist', {
       
       // 更新股票/加密貨幣資料
       this.items[index] = {
-        ...,
+        ...item,
         currentPrice: priceData.price,
         change: priceData.change,
         changePercent: priceData.changePercent,
