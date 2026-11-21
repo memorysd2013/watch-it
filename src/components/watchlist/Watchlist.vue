@@ -168,8 +168,9 @@ const getTypeLabel = (type) => {
         </button>
       </div>
 
-      <!-- Table -->
-      <div class="table-wrapper">
+      <!-- Desktop table view -->
+      <div class="desktop-only">
+        <div class="table-wrapper">
         <table class="watchlist-table">
           <thead>
             <tr>
@@ -292,6 +293,7 @@ const getTypeLabel = (type) => {
               <Trash2 :size="14" />
             </button>
           </div>
+        </div>
         </div>
       </div>
     </div>
