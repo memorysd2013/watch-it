@@ -31,7 +31,6 @@
         >
           <option value="">選擇類型</option>
           <option value="twse">台股</option>
-          <option value="us">美股</option>
           <option value="crypto">加密貨幣</option>
         </select>
       </div>
