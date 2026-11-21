@@ -339,7 +339,7 @@ const closeSubForm = () => {
   height: 34px;
   display: inline-flex;
   align-items: center;
-  background: linear-gradient(135deg, var(--accent-cyan), var(--accent-blue));
+  background: var(--accent);
   color: var(--bg-primary);
   border: 1px solid var(--accent-cyan);
   border-radius: 8px;
@@ -385,7 +385,7 @@ const closeSubForm = () => {
 
 .add-first-btn {
   padding: 12px 24px;
-  background: linear-gradient(135deg, var(--accent-cyan), var(--accent-blue));
+  background: var(--accent);
   color: var(--bg-primary);
   border: none;
   border-radius: 10px;
