@@ -506,23 +506,12 @@ td {
   }
 }
 
-/* Mobile responsive */
-@media (max-width: 768px) {
-  .view-header {
-    flex-direction: column;
-  }
+/* Desktop and mobile view toggling */
+.desktop-only {
+  display: block;
+}
 
-  .table-wrapper {
-    overflow-x: scroll;
-  }
-
-  .watchlist-table {
-    min-width: 700px;
-  }
-
-  th, td {
-    padding: var(--space-2) var(--space-3);
-    font-size: var(--text-xs);
-  }
+.mobile-only {
+  display: none;
 }
 </style>
