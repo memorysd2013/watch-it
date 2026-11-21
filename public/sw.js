@@ -9,7 +9,7 @@ const urlsToCache = [
 
 // 安裝 Service Worker
 self.addEventListener('install', (event) => {
-  console.log('Service Worker 安裝中***REMOVED***')
+  console.log('Service Worker 安裝中...')
   event.waitUntil(
     caches.open(CACHE_NAME)
       .then((cache) => {
@@ -21,7 +21,7 @@ self.addEventListener('install', (event) => {
 
 // 啟動 Service Worker
 self.addEventListener('activate', (event) => {
-  console.log('Service Worker 啟動中***REMOVED***')
+  console.log('Service Worker 啟動中...')
   event.waitUntil(
     caches.keys().then((cacheNames) => {
       return Promise.all(

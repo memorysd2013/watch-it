@@ -50,7 +50,7 @@
           v-if="loading"
           class="loading-spinner"
         ></span>
-        {{ loading ? '搜尋中***REMOVED***' : '新增到監控清單' }}
+        {{ loading ? '搜尋中…' : '新增到監控清單' }}
       </button>
     </form>
 

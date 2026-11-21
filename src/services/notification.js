@@ -134,9 +134,13 @@ class NotificationService {
       console.log('🔍 使用 Safari 相容方法獲取的公鑰:', envVapidKey)
       
       // 取得 VAPID 公鑰（優先使用環境變數，否則使用預設值）
-      const vapidPublicKey = envVapidKey || 
-        '***REMOVED***'
-      
+      const vapidPublicKey = envVapidKey
+
+      if (!vapidPublicKey) {
+        console.error('❌ VAPID 公鑰未設定')
+        console.error('請在 .env.local 設定 VITE_VAPID_PUBLIC_KEY')
+        throw new Error('VAPID 公鑰未設定，無法訂閱推播通知')
+      }
       // 🔍 調試信息：印出當前使用的公鑰
       console.log('🔍 VAPID 公鑰調試信息:')
       console.log('最終使用的公鑰:', vapidPublicKey)
