@@ -114,27 +114,6 @@
         </div>
       </div>
 
-      <!-- 價格走勢圖表 -->
-      <div
-        v-if="false"
-        class="chart-section"
-      >
-        <div class="chart-header">
-          <h3>價格走勢圖</h3>
-          <button
-            @click="showDataInfo = true"
-            class="info-btn"
-            title="關於圖表數據"
-          >
-            ℹ️ 數據說明
-          </button>
-        </div>
-        <ExchangeRateChart
-          from-currency="USD"
-          to-currency="TWD"
-          initial-period="1W"
-        />
-      </div>
     </div>
 
     <!-- 錯誤訊息 -->
@@ -145,69 +124,6 @@
       {{ error }}
     </div>
 
-    <!-- 數據說明對話框 -->
-    <div
-      v-if="showDataInfo"
-      class="modal-overlay"
-      @click="showDataInfo = false"
-    >
-      <div
-        class="modal-content"
-        @click.stop
-      >
-        <div class="modal-header">
-          <h3>📊 關於匯率圖表數據</h3>
-          <button
-            @click="showDataInfo = false"
-            class="close-btn"
-          >
-            ✕
-          </button>
-        </div>
-        <div class="modal-body">
-          <div class="info-section">
-            <h4>🔄 當前匯率</h4>
-            <p>
-              上方顯示的 USD/TWD 和 TWD/USD
-              匯率是<strong>即時真實數據</strong>，來自 ExchangeRate-API。
-            </p>
-          </div>
-
-          <div class="info-section">
-            <h4>📈 歷史走勢圖</h4>
-            <p>圖表顯示的歷史數據來源：</p>
-            <ul>
-              <li>
-                <strong>有 API Key：</strong>使用 FreeCurrencyAPI
-                提供的真實歷史匯率數據
-              </li>
-              <li>
-                <strong>無 API Key：</strong
-                >基於當前匯率生成的模擬數據（僅供參考）
-              </li>
-              <li>系統會自動選擇最佳數據來源</li>
-            </ul>
-          </div>
-
-          <div class="info-section">
-            <h4>💡 使用建議</h4>
-            <ul>
-              <li>參考圖表了解匯率可能的波動趨勢</li>
-              <li>實際交易請以即時匯率為準</li>
-              <li>如需精確歷史數據，建議使用專業金融平台</li>
-            </ul>
-          </div>
-        </div>
-        <div class="modal-footer">
-          <button
-            @click="showDataInfo = false"
-            class="confirm-btn"
-          >
-            了解
-          </button>
-        </div>
-      </div>
-    </div>
   </div>
 </template>
 
@@ -215,7 +131,6 @@
 import { ref, onMounted, onUnmounted } from 'vue';
 import { storeToRefs } from 'pinia';
 import { useExchangeRateStore } from '../../stores/exchangeRate.js';
-import ExchangeRateChart from './ExchangeRateChart.vue';
 
 const exchangeRateStore = useExchangeRateStore();
 const { usdTwdRate, lastUpdatedAt } = storeToRefs(exchangeRateStore);
@@ -226,7 +141,6 @@ const loading = ref(false);
 const error = ref('');
 const usdAmount = ref(1);
 const twdAmount = ref(0);
-const showDataInfo = ref(false);
 
 // 快速計算金額
 const quickAmounts = [1, 10, 100, 1000, 10000];

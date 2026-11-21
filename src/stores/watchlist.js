@@ -168,7 +168,14 @@ export const useWatchlistStore = defineStore('watchlist', {
       try {
         const saved = localStorage.getItem('watchlist')
         if (saved) {
-          this.items = JSON.parse(saved)
+          const allItems = JSON.parse(saved)
+          // 過濾掉已停用的 US 股票項目
+          this.items = allItems.filter(item => item.type !== 'us')
+          // 如果有項目被過濾，更新 localStorage
+          if (allItems.length !== this.items.length) {
+            console.log(`已移除 ${allItems.length - this.items.length} 個停用的美股項目`)
+            this.saveToLocalStorage()
+          }
         }
       } catch (error) {
         console.error('從本地儲存載入失敗:', error)
