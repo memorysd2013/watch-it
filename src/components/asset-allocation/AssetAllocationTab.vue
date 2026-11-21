@@ -391,20 +391,23 @@ const closeSubForm = () => {
 }
 
 .add-first-btn {
-  padding: 12px 24px;
+  height: 40px;
+  padding: 0 var(--space-4);
   background: var(--accent);
-  color: var(--bg-primary);
+  color: var(--bg-deepest);
   border: none;
-  border-radius: 10px;
-  font-size: 15px;
-  font-weight: 700;
+  border-radius: var(--radius-md);
+  font-size: var(--text-sm);
+  font-weight: var(--font-medium);
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: all var(--duration-fast) var(--ease);
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
 }
 
 .add-first-btn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 0 25px rgba(0, 217, 255, 0.5);
+  background: rgba(245, 165, 36, 0.9);
 }
 
 .asset-content {
