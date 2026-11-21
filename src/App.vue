@@ -6,6 +6,7 @@ import { useExchangeRateStore } from './stores/exchangeRate.js'
 import notificationService from './services/notification.js'
 import AppNav from './components/layout/AppNav.vue'
 import MobileTabBar from './components/layout/MobileTabBar.vue'
+import ToastContainer from './components/ui/ToastContainer.vue'
 
 const watchlistStore = useWatchlistStore()
 const assetAllocationStore = useAssetAllocationStore()
@@ -31,6 +32,7 @@ onMounted(async () => {
     </main>
 
     <MobileTabBar class="mobile-tab-bar" />
+    <ToastContainer />
   </div>
 </template>
 
