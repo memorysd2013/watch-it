@@ -1,63 +1,162 @@
+<script setup>
+import { ref, computed } from 'vue'
+import { useWatchlistStore } from '../../stores/watchlist.js'
+import { useToast } from '../../composables/useToast.js'
+import { RefreshCw, Trash2, TrendingUp, TrendingDown } from 'lucide-vue-next'
+
+const watchlistStore = useWatchlistStore()
+const { success, error: errorToast } = useToast()
+
+const loading = ref(false)
+const sortBy = ref('symbol')
+const sortOrder = ref('asc')
+const activeFilter = ref('all')
+
+const watchlistItems = computed(() => watchlistStore.getAllItems)
+
+const filters = [
+  { value: 'all', label: '全部' },
+  { value: 'twse', label: '台股' },
+  { value: 'crypto', label: '加密貨幣' }
+]
+
+const filteredItems = computed(() => {
+  let items = activeFilter.value === 'all'
+    ? watchlistItems.value
+    : watchlistItems.value.filter(item => item.type === activeFilter.value)
+
+  return items.sort((a, b) => {
+    let aVal = a[sortBy.value]
+    let bVal = b[sortBy.value]
+    
+    if (typeof aVal === 'string') {
+      aVal = aVal.toLowerCase()
+      bVal = bVal.toLowerCase()
+    }
+    
+    if (sortOrder.value === 'asc') {
+      return aVal > bVal ? 1 : -1
+    } else {
+      return aVal < bVal ? 1 : -1
+    }
+  })
+})
+
+const setSortBy = (field) => {
+  if (sortBy.value === field) {
+    sortOrder.value = sortOrder.value === 'asc' ? 'desc' : 'asc'
+  } else {
+    sortBy.value = field
+    sortOrder.value = 'asc'
+  }
+}
+
+const refreshAll = async () => {
+  loading.value = true
+  try {
+    await watchlistStore.updateAllPrices()
+    success('已更新所有價格')
+  } catch (err) {
+    errorToast('更新失敗：' + err.message)
+  } finally {
+    loading.value = false
+  }
+}
+
+const deleteItem = (item) => {
+  const deletedItem = { ...item }
+  watchlistStore.removeItem(item.id)
+  
+  success('已刪除項目', {
+    action: '復原',
+    duration: 5000,
+    onUndo: () => {
+      watchlistStore.items.push(deletedItem)
+      watchlistStore.saveToLocalStorage()
+      success('已恢復項目')
+    }
+  })
+}
+
+const formatPrice = (price) => {
+  if (!price) return '--'
+  return price.toLocaleString('en-US', {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2
+  })
+}
+
+const formatChange = (change) => {
+  if (!change) return '--'
+  const prefix = change > 0 ? '+' : ''
+  return prefix + change.toFixed(2)
+}
+
+const formatPercent = (percent) => {
+  if (!percent) return '--'
+  const prefix = percent > 0 ? '+' : ''
+  return prefix + percent.toFixed(2) + '%'
+}
+
+const formatTime = (isoString) => {
+  if (!isoString) return '--'
+  const date = new Date(isoString)
+  return date.toLocaleTimeString('zh-TW', { hour: '2-digit', minute: '2-digit' })
+}
+
+const getTypeLabel = (type) => {
+  const labels = {
+    twse: '台股',
+    crypto: '加密貨幣'
+  }
+  return labels[type] || type
+}
+</script>
+
 <template>
-  <div class="watchlist">
-    <div class="watchlist-header">
-      <h2>監控清單</h2>
-      <div class="header-actions">
-        <button
-          @click="refreshAll"
-          :disabled="loading"
-          class="refresh-all-btn"
-        >
-          <span
-            v-if="loading"
-            class="loading-spinner"
-          ></span>
-          {{ loading ? '更新中...' : '全部更新' }}
-        </button>
-        <button
+  <div class="watchlist-view">
+    <div class="view-header">
+      <div>
+        <h1 class="view-title">監控清單</h1>
+        <p
           v-if="watchlistItems.length > 0"
-          @click="clearAll"
-          class="clear-all-btn"
+          class="view-subtitle"
         >
-          清空清單
-        </button>
+          共 {{ watchlistItems.length }} 個項目
+        </p>
       </div>
+      <button
+        v-if="watchlistItems.length > 0"
+        @click="refreshAll"
+        :disabled="loading"
+        class="btn btn-secondary"
+      >
+        <RefreshCw
+          :size="16"
+          :class="{ 'spinning': loading }"
+        />
+        {{ loading ? '更新中' : '更新全部' }}
+      </button>
     </div>
 
+    <!-- Empty state -->
     <div
       v-if="watchlistItems.length === 0"
       class="empty-state"
     >
-      <div class="empty-icon">📊</div>
+      <div class="empty-icon">
+        <TrendingUp :size="48" />
+      </div>
       <h3>還沒有監控項目</h3>
-      <p>使用上方的搜尋功能新增台股、美股或加密貨幣到監控清單</p>
+      <p>前往「新增監控」頁面添加台股或加密貨幣</p>
     </div>
 
+    <!-- Watchlist table -->
     <div
       v-else
       class="watchlist-content"
     >
-      <!-- 統計資訊 -->
-      <div class="stats">
-        <div class="stat-item">
-          <span class="stat-label">總計</span>
-          <span class="stat-value">{{ watchlistItems.length }}</span>
-        </div>
-        <div class="stat-item">
-          <span class="stat-label">台股</span>
-          <span class="stat-value">{{ getItemsByType('twse').length }}</span>
-        </div>
-        <div class="stat-item">
-          <span class="stat-label">美股</span>
-          <span class="stat-value">{{ getItemsByType('us').length }}</span>
-        </div>
-        <div class="stat-item">
-          <span class="stat-label">加密貨幣</span>
-          <span class="stat-value">{{ getItemsByType('crypto').length }}</span>
-        </div>
-      </div>
-
-      <!-- 篩選器 -->
+      <!-- Filters -->
       <div class="filters">
         <button
           v-for="filter in filters"
@@ -69,330 +168,318 @@
         </button>
       </div>
 
-      <!-- 價格卡片列表 -->
-      <div class="price-cards">
-        <PriceCard
-          v-for="item in filteredItems"
-          :key="item.id"
-          :item="item"
-        />
+      <!-- Table -->
+      <div class="table-wrapper">
+        <table class="watchlist-table">
+          <thead>
+            <tr>
+              <th @click="setSortBy('type')">
+                類型
+              </th>
+              <th @click="setSortBy('symbol')">
+                代號
+              </th>
+              <th @click="setSortBy('name')">
+                名稱
+              </th>
+              <th
+                @click="setSortBy('currentPrice')"
+                class="text-right"
+              >
+                價格
+              </th>
+              <th
+                @click="setSortBy('changePercent')"
+                class="text-right"
+              >
+                漲跌幅
+              </th>
+              <th class="text-right">
+                更新時間
+              </th>
+              <th class="text-center">
+                操作
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr
+              v-for="item in filteredItems"
+              :key="item.id"
+              class="table-row"
+            >
+              <td class="type-cell">
+                {{ getTypeLabel(item.type) }}
+              </td>
+              <td class="symbol-cell number">
+                {{ item.symbol }}
+              </td>
+              <td class="name-cell">
+                {{ item.name }}
+              </td>
+              <td class="price-cell text-right number">
+                {{ formatPrice(item.currentPrice) }}
+              </td>
+              <td
+                :class="['change-cell', 'text-right', 'number', {
+                  'price-up': item.changePercent > 0,
+                  'price-down': item.changePercent < 0
+                }]"
+              >
+                <component
+                  :is="item.changePercent > 0 ? TrendingUp : TrendingDown"
+                  :size="14"
+                  class="change-icon"
+                />
+                {{ formatPercent(item.changePercent) }}
+              </td>
+              <td class="time-cell text-right number">
+                {{ formatTime(item.lastUpdated) }}
+              </td>
+              <td class="action-cell text-center">
+                <button
+                  @click="deleteItem(item)"
+                  class="btn-icon"
+                  aria-label="刪除"
+                >
+                  <Trash2 :size="16" />
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
       </div>
-    </div>
-
-    <!-- 錯誤訊息 -->
-    <div
-      v-if="error"
-      class="error-message"
-    >
-      {{ error }}
     </div>
   </div>
 </template>
 
-<script setup>
-import { ref, computed, onMounted } from 'vue';
-import { useWatchlistStore } from '../../stores/watchlist.js';
-import PriceCard from './PriceCard.vue';
-
-const watchlistStore = useWatchlistStore();
-
-// 狀態
-const loading = ref(false);
-const error = ref('');
-const activeFilter = ref('all');
-
-// 篩選器選項
-const filters = [
-  { value: 'all', label: '全部' },
-  { value: 'twse', label: '台股' },
-  { value: 'us', label: '美股' },
-  { value: 'crypto', label: '加密貨幣' },
-];
-
-// 計算屬性
-const watchlistItems = computed(() => watchlistStore.getAllItems);
-
-const getItemsByType = (type) => {
-  return watchlistStore.getItemsByType(type);
-};
-
-const filteredItems = computed(() => {
-  if (activeFilter.value === 'all') {
-    return watchlistItems.value;
-  }
-  return getItemsByType(activeFilter.value);
-});
-
-// 方法
-const refreshAll = async () => {
-  loading.value = true;
-  error.value = '';
-
-  try {
-    await watchlistStore.updateAllPrices();
-  } catch (err) {
-    error.value = err.message;
-  } finally {
-    loading.value = false;
-  }
-};
-
-const clearAll = () => {
-  if (confirm('確定要清空所有監控項目嗎？此操作無法復原。')) {
-    watchlistStore.clearAll();
-  }
-};
-
-// 生命週期
-onMounted(() => {
-  // 載入本地儲存的資料
-  watchlistStore.loadFromLocalStorage();
-
-  // 自動更新價格 (每5分鐘)
-  setInterval(() => {
-    if (watchlistItems.value.length > 0 && !loading.value) {
-      refreshAll();
-    }
-  }, 5 * 60 * 1000);
-});
-</script>
-
 <style scoped>
-.watchlist {
-  padding: 24px;
+.watchlist-view {
+  width: 100%;
 }
 
-.watchlist-header {
+.view-header {
   display: flex;
   justify-content: space-between;
-  align-items: center;
-  margin-bottom: 24px;
-  flex-wrap: wrap;
-  gap: 16px;
+  align-items: flex-start;
+  margin-bottom: var(--space-6);
+  gap: var(--space-4);
 }
 
-.watchlist-header h2 {
+.view-title {
+  font-size: var(--text-xl);
+  font-weight: var(--font-medium);
   margin: 0;
-  color: var(--text-bright);
-  font-size: 28px;
-  font-weight: 700;
-  text-shadow: 0 0 20px rgba(255, 255, 255, 0.2);
+  color: var(--text-primary);
 }
 
-.header-actions {
+.view-subtitle {
+  font-size: var(--text-sm);
+  color: var(--text-muted);
+  margin: var(--space-1) 0 0 0;
+}
+
+/* Empty state */
+.empty-state {
+  text-align: center;
+  padding: var(--space-16) var(--space-4);
+}
+
+.empty-icon {
+  margin-bottom: var(--space-4);
+  color: var(--text-muted);
+}
+
+.empty-state h3 {
+  font-size: var(--text-lg);
+  font-weight: var(--font-medium);
+  margin: 0 0 var(--space-2) 0;
+  color: var(--text-primary);
+}
+
+.empty-state p {
+  font-size: var(--text-sm);
+  color: var(--text-secondary);
+  margin: 0;
+}
+
+/* Filters */
+.filters {
   display: flex;
-  gap: 12px;
+  gap: var(--space-2);
+  margin-bottom: var(--space-4);
 }
 
-.refresh-all-btn,
-.clear-all-btn {
-  padding: 10px 16px;
-  border: 1px solid;
-  border-radius: 10px;
-  font-size: 14px;
-  font-weight: 700;
+.filter-btn {
+  padding: var(--space-2) var(--space-4);
+  background: var(--bg-card);
+  border: 1px solid var(--border-hairline);
+  border-radius: var(--radius-sm);
+  color: var(--text-secondary);
+  font-size: var(--text-sm);
+  font-weight: var(--font-normal);
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: all var(--duration-fast) var(--ease);
+}
+
+.filter-btn:hover {
+  color: var(--text-primary);
+  background: var(--bg-raised);
+}
+
+.filter-btn.active {
+  color: var(--accent);
+  border-color: var(--accent);
+  background: rgba(245, 165, 36, 0.08);
+  font-weight: var(--font-medium);
+}
+
+/* Table */
+.table-wrapper {
+  overflow-x: auto;
+  border: 1px solid var(--border-hairline);
+  border-radius: var(--radius-sm);
+}
+
+.watchlist-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--text-sm);
+}
+
+thead {
+  background: var(--bg-raised);
+  border-bottom: 1px solid var(--border-hairline);
+}
+
+th {
+  padding: var(--space-3) var(--space-4);
+  text-align: left;
+  font-weight: var(--font-medium);
+  color: var(--text-secondary);
+  font-size: var(--text-xs);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  cursor: pointer;
+  user-select: none;
+  transition: color var(--duration-fast) var(--ease);
+}
+
+th:hover {
+  color: var(--text-primary);
+}
+
+.table-row {
+  border-bottom: 1px solid var(--border-hairline);
+  transition: background var(--duration-fast) var(--ease);
+}
+
+.table-row:last-child {
+  border-bottom: none;
+}
+
+.table-row:hover {
+  background: var(--bg-raised);
+}
+
+td {
+  padding: var(--space-3) var(--space-4);
+  color: var(--text-primary);
+}
+
+.type-cell {
+  font-size: var(--text-xs);
+  color: var(--text-muted);
+}
+
+.symbol-cell {
+  font-weight: var(--font-medium);
+}
+
+.name-cell {
+  max-width: 200px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.change-cell {
   display: flex;
   align-items: center;
-  gap: 8px;
-  backdrop-filter: blur(10px);
+  justify-content: flex-end;
+  gap: var(--space-1);
 }
 
-.refresh-all-btn {
-  background: linear-gradient(135deg, var(--accent-cyan), var(--accent-blue));
-  color: var(--bg-primary);
-  border-color: var(--accent-cyan);
-  box-shadow: 0 0 20px rgba(0, 217, 255, 0.3);
+.change-icon {
+  flex-shrink: 0;
 }
 
-.refresh-all-btn:hover:not(:disabled) {
-  background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
-  transform: translateY(-2px);
-  box-shadow: 0 0 30px rgba(0, 217, 255, 0.5);
+.time-cell {
+  font-size: var(--text-xs);
+  color: var(--text-muted);
 }
 
-.refresh-all-btn:disabled {
-  background: var(--bg-tertiary);
-  cursor: not-allowed;
-  transform: none;
-  box-shadow: none;
-  opacity: 0.5;
+.btn-icon {
+  padding: var(--space-1);
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-sm);
+  transition: all var(--duration-fast) var(--ease);
 }
 
-.clear-all-btn {
-  background: rgba(255, 71, 87, 0.15);
-  color: var(--danger);
-  border-color: var(--danger);
+.btn-icon:hover {
+  color: var(--color-up);
+  background: rgba(229, 72, 77, 0.1);
 }
 
-.clear-all-btn:hover {
-  background: rgba(255, 71, 87, 0.25);
-  box-shadow: 0 0 20px rgba(255, 71, 87, 0.4);
-  transform: translateY(-2px);
+/* Utilities */
+.text-right {
+  text-align: right;
+  justify-content: flex-end;
 }
 
-.loading-spinner {
-  width: 14px;
-  height: 14px;
-  border: 2px solid transparent;
-  border-top: 2px solid currentColor;
-  border-radius: 50%;
+.text-center {
+  text-align: center;
+}
+
+.spinning {
   animation: spin 1s linear infinite;
 }
 
 @keyframes spin {
-  0% {
-    transform: rotate(0deg);
-  }
-  100% {
+  to {
     transform: rotate(360deg);
   }
 }
 
-.empty-state {
-  text-align: center;
-  padding: 60px 20px;
-  background: var(--card-bg);
-  border-radius: 16px;
-  border: 1px solid var(--border-color);
-  box-shadow: var(--shadow-md);
-  backdrop-filter: blur(10px);
+@media (prefers-reduced-motion: reduce) {
+  .spinning {
+    animation: none;
+  }
 }
 
-.empty-icon {
-  font-size: 48px;
-  margin-bottom: 16px;
-  filter: drop-shadow(0 0 20px rgba(0, 217, 255, 0.3));
-}
-
-.empty-state h3 {
-  margin: 0 0 8px 0;
-  color: var(--text-bright);
-  font-size: 20px;
-}
-
-.empty-state p {
-  margin: 0;
-  color: var(--text-secondary);
-  font-size: 14px;
-}
-
-.watchlist-content {
-  display: flex;
-  flex-direction: column;
-  gap: 24px;
-}
-
-.stats {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-  gap: 16px;
-  background: var(--card-bg);
-  padding: 20px;
-  border-radius: 16px;
-  border: 1px solid var(--border-color);
-  box-shadow: var(--shadow-md);
-  backdrop-filter: blur(10px);
-}
-
-.stat-item {
-  text-align: center;
-}
-
-.stat-label {
-  display: block;
-  font-size: 12px;
-  color: var(--text-secondary);
-  margin-bottom: 4px;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
-
-.stat-value {
-  display: block;
-  font-size: 24px;
-  font-weight: 700;
-  color: var(--accent-cyan);
-  text-shadow: 0 0 15px rgba(0, 217, 255, 0.3);
-}
-
-.filters {
-  display: flex;
-  gap: 8px;
-  flex-wrap: wrap;
-}
-
-.filter-btn {
-  padding: 8px 16px;
-  border: 1px solid var(--border-color);
-  background: rgba(25, 32, 56, 0.5);
-  color: var(--text-secondary);
-  border-radius: 20px;
-  font-size: 14px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  backdrop-filter: blur(10px);
-}
-
-.filter-btn:hover {
-  border-color: var(--accent-cyan);
-  color: var(--accent-cyan);
-  box-shadow: 0 0 15px rgba(0, 217, 255, 0.2);
-}
-
-.filter-btn.active {
-  background: linear-gradient(135deg, var(--accent-cyan), var(--accent-blue));
-  border-color: var(--accent-cyan);
-  color: var(--bg-primary);
-  box-shadow: 0 0 20px rgba(0, 217, 255, 0.4);
-  font-weight: 700;
-}
-
-.price-cards {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
-  gap: 20px;
-}
-
-.error-message {
-  background: rgba(255, 71, 87, 0.15);
-  color: var(--danger);
-  padding: 16px;
-  border-radius: 10px;
-  border: 1px solid var(--danger);
-  border-left: 4px solid var(--danger);
-  margin-top: 16px;
-  font-size: 14px;
-  box-shadow: 0 0 15px rgba(255, 71, 87, 0.2);
-  backdrop-filter: blur(10px);
-}
-
+/* Mobile responsive */
 @media (max-width: 768px) {
-  .watchlist {
-    padding: 0 12px;
-  }
-
-  .watchlist-header {
+  .view-header {
     flex-direction: column;
-    align-items: stretch;
   }
 
-  .header-actions {
-    justify-content: center;
+  .table-wrapper {
+    overflow-x: scroll;
   }
 
-  .stats {
-    grid-template-columns: repeat(3, 1fr);
+  .watchlist-table {
+    min-width: 700px;
   }
 
-  .price-cards {
-    grid-template-columns: 1fr;
-  }
-
-  .filters {
-    justify-content: center;
+  th, td {
+    padding: var(--space-2) var(--space-3);
+    font-size: var(--text-xs);
   }
 }
 </style>
