@@ -36,7 +36,7 @@
         class="btn btn-primary refresh-btn"
       >
         <span v-if="loading" class="loading-spinner"></span>
-        {{ loading ? '更新中***REMOVED***' : '更新匯率' }}
+        {{ loading ? '更新中…' : '更新匯率' }}
       </button>
 
       <!-- Calculator -->

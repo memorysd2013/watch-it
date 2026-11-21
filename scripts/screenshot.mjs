@@ -56,7 +56,7 @@ const routes = [
 ];
 
 // Desktop dark
-console.log('Capturing desktop dark theme***REMOVED***');
+console.log('...');
 const page1 = await browser.newPage({
   viewport: { width: 1440, height: 900 },
   colorScheme: 'dark'
@@ -80,7 +80,7 @@ for (const route of routes) {
 await page1.close();
 
 // Desktop light
-console.log('Capturing desktop light theme***REMOVED***');
+console.log('...');
 const page2 = await browser.newPage({
   viewport: { width: 1440, height: 900 },
   colorScheme: 'light'
@@ -104,7 +104,7 @@ for (const route of routes) {
 await page2.close();
 
 // Mobile dark
-console.log('Capturing mobile dark theme***REMOVED***');
+console.log('...');
 const page3 = await browser.newPage({
   viewport: { width: 390, height: 844 },
   colorScheme: 'dark'
@@ -128,7 +128,7 @@ for (const route of routes) {
 await page3.close();
 
 // Mobile light
-console.log('Capturing mobile light theme***REMOVED***');
+console.log('...');
 const page4 = await browser.newPage({
   viewport: { width: 390, height: 844 },
   colorScheme: 'light'

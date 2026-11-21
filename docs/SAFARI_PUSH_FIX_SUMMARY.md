@@ -87,7 +87,7 @@ urlBase64ToUint8Array(base64String) {
 
 ```javascript
 async subscribe() {
-  // ***REMOVED*** 前置檢查 ***REMOVED***
+  // ... 前置檢查 ...
   
   try {
     // 取得 VAPID 公鑰

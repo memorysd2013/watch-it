@@ -176,7 +176,7 @@ class NotificationService {
         throw new Error('VAPID 公鑰轉換失敗: ' + conversionError.message)
       }
 
-      console.log('🚀 開始訂閱推播通知***REMOVED***')
+      console.log('...')
       const subscription = await this.registration.pushManager.subscribe({
         userVisibleOnly: true,
         applicationServerKey: applicationServerKey
@@ -253,7 +253,7 @@ class NotificationService {
       badge: '/favicon.ico',
       requireInteraction: false,
       silent: false,
-      ***REMOVED***options
+      ...
     }
 
     try {

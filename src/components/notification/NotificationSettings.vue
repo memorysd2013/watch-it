@@ -88,7 +88,7 @@
             v-if="loading"
             class="loading-spinner"
           ></span>
-          {{ loading ? '設定中***REMOVED***' : '啟用推播通知' }}
+          {{ loading ? '設定中…' : '啟用推播通知' }}
         </button>
 
         <button

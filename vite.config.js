@@ -34,7 +34,7 @@ function safariEnvPlugin() {
 export default defineConfig(({ mode }) => ({
   plugins: [
     vue(),
-    ***REMOVED***(mode === 'development' ? [vueDevTools()] : []),
+    ...(mode === 'development' ? [vueDevTools()] : []),
     safariEnvPlugin(), // Safari 手機瀏覽器環境變數注入
     VitePWA({
       registerType: 'autoUpdate',

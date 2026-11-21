@@ -124,7 +124,7 @@ export default async function handler(req, res) {
   }
   
   try {
-    console.log('開始執行每日推播通知任務***REMOVED***')
+    console.log('...')
     
     // 模擬的監控清單 (實際應用中應該從資料庫獲取)
     const watchlist = [

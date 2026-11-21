@@ -3,7 +3,7 @@
 
 import webpush from 'web-push';
 
-console.log('🔐 正在生成 VAPID 密鑰對***REMOVED***\n');
+console.log('🔐 正在生成 VAPID 密鑰對...\n');
 
 try {
   const vapidKeys = webpush.generateVAPIDKeys();

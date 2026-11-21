@@ -17,7 +17,7 @@ if (!publicKey) {
   process.exit(1);
 }
 
-console.log('公鑰:', publicKey.substring(0, 20) + '***REMOVED***');
+console.log('...');
 console.log('─'.repeat(80));
 
 let allChecks = true;
