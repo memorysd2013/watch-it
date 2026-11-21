@@ -3,17 +3,25 @@
 
 const webpush = require('web-push')
 
-// 設定 VAPID 金鑰 (請替換為你的金鑰)
-webpush.setVapidDetails(
-  '***REMOVED***',
-  '***REMOVED***', // 公鑰
-  '***REMOVED***-here' // 私鑰
-)
+// 從環境變數讀取 VAPID 金鑰
+const vapidEmail = process.env.VAPID_EMAIL
+const vapidPublicKey = process.env.VAPID_PUBLIC_KEY || process.env.VITE_VAPID_PUBLIC_KEY
+const vapidPrivateKey = process.env.VAPID_PRIVATE_KEY
+
+// 驗證必要的環境變數
+if (!vapidEmail || !vapidPublicKey || !vapidPrivateKey) {
+  console.error('❌ Missing required environment variables:')
+  if (!vapidEmail) console.error('  - VAPID_EMAIL')
+  if (!vapidPublicKey) console.error('  - VAPID_PUBLIC_KEY or VITE_VAPID_PUBLIC_KEY')
+  if (!vapidPrivateKey) console.error('  - VAPID_PRIVATE_KEY')
+  // Don't throw during module load - will handle in the handler
+} else {
+  webpush.setVapidDetails(vapidEmail, vapidPublicKey, vapidPrivateKey)
+}
 
 // 模擬的用戶訂閱資料 (實際應用中應該從資料庫獲取)
 const subscriptions = [
   // 這裡應該從資料庫獲取所有用戶的推播訂閱
-  // 格式: { endpoint: '***REMOVED***', keys: { p256dh: '***REMOVED***', auth: '***REMOVED***' } }
 ]
 
 // 獲取價格資料的函數
