@@ -16,15 +16,13 @@ VAPID_PRIVATE_KEY=***REMOVED***
 # Vercel Cron 認證密鑰 (隨機字串)
 CRON_SECRET=***REMOVED***-key-here
 
-# ===== 中等私密 (需要保護) =====
-# Alpha Vantage API Key - 美股資料
-# 申請網址: https://www.alphavantage.co/support/#api-key
-VITE_ALPHA_VANTAGE_API_KEY=***REMOVED***
+# Note: Alpha Vantage API (US stocks) feature has been removed
+# No longer needed
 
 # ===== 低度私密 (相對安全) =====
 # VAPID 公鑰 - 客戶端推播訂閱
 # 生成方式: npx web-push generate-vapid-keys
-VITE_VAPID_PUBLIC_KEY=***REMOVED***
+VITE_VAPID_PUBLIC_KEY=***REMOVED***-here
 
 # VAPID 聯絡電子郵件
 VITE_VAPID_EMAIL=***REMOVED***
@@ -39,12 +37,7 @@ VITE_APP_URL=http://localhost:5173
 
 ## 🔑 需要設定的 API Key
 
-### 1. Alpha Vantage API Key (已設定)
-- **目前值**: `***REMOVED***`
-- **用途**: 美股資料
-- **狀態**: ✅ 已設定
-
-### 2. VAPID 金鑰 (需要生成)
+### 1. VAPID 金鑰 (需要生成)
 你需要生成一對 VAPID 金鑰：
 
 ```bash
@@ -59,7 +52,7 @@ web-push generate-vapid-keys
 - **Public Key**: 用於 `VITE_VAPID_PUBLIC_KEY`
 - **Private Key**: 用於 `VAPID_PRIVATE_KEY`
 
-### 3. CRON_SECRET (需要生成)
+### 2. CRON_SECRET (需要生成)
 生成一個隨機密鑰：
 
 ```bash
