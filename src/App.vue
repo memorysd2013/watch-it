@@ -1,5 +1,5 @@
 <script setup>
-import { onMounted } from 'vue'
+import { onMounted, ref, onUnmounted } from 'vue'
 import { useWatchlistStore } from './stores/watchlist.js'
 import { useAssetAllocationStore } from './stores/assetAllocation.js'
 import { useExchangeRateStore } from './stores/exchangeRate.js'
@@ -15,18 +15,30 @@ const exchangeRateStore = useExchangeRateStore()
 
 usePWA()
 
+const isDesktop = ref(window.innerWidth > 768)
+
+const updateLayout = () => {
+  isDesktop.value = window.innerWidth > 768
+}
+
 onMounted(async () => {
   watchlistStore.loadFromLocalStorage()
   assetAllocationStore.loadFromLocalStorage()
   exchangeRateStore.loadFromLocalStorage()
   watchlistStore.loadNotificationsState()
   await notificationService.initialize()
+  
+  window.addEventListener('resize', updateLayout)
+})
+
+onUnmounted(() => {
+  window.removeEventListener('resize', updateLayout)
 })
 </script>
 
 <template>
   <div class="app-layout">
-    <AppNav class="app-nav" />
+    <AppNav v-if="isDesktop" class="app-nav" />
     
     <main class="app-main">
       <div class="content-container">
@@ -34,7 +46,7 @@ onMounted(async () => {
       </div>
     </main>
 
-    <MobileTabBar class="mobile-tab-bar" />
+    <MobileTabBar v-if="!isDesktop" class="mobile-tab-bar" />
     <ToastContainer />
   </div>
 </template>
@@ -63,20 +75,12 @@ onMounted(async () => {
     margin-left: var(--sidebar-width);
     padding: var(--space-6);
   }
-
-  .mobile-tab-bar {
-    display: none;
-  }
 }
 
 /* Mobile: bottom tab bar */
 @media (max-width: 768px) {
   .app-layout {
     flex-direction: column;
-  }
-
-  .app-nav {
-    display: none;
   }
 
   .app-main {

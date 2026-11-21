@@ -173,7 +173,7 @@ export const useWatchlistStore = defineStore('watchlist', {
           this.items = allItems.filter(item => item.type !== 'us')
           // 如果有項目被過濾，更新 localStorage
           if (allItems.length !== this.items.length) {
-            console.log(`已移除 ${allItems.length - this.items.length} 個停用的美股項目`)
+            console.log(`已移除 ${allItems.length - this.items.length} 個已停用的項目`)
             this.saveToLocalStorage()
           }
         }

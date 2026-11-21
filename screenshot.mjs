@@ -1,7 +1,15 @@
 import { chromium } from 'playwright';
-import { mkdir } from 'fs/promises';
+import { mkdir, access } from 'fs/promises';
 
-await mkdir('/opt/cursor/artifacts', { recursive: true });
+const artifactsDir = '/opt/cursor/artifacts';
+try {
+  await mkdir(artifactsDir, { recursive: true, mode: 0o777 });
+  await access(artifactsDir);
+  console.log(`Artifacts directory ready: ${artifactsDir}`);
+} catch (err) {
+  console.error(`Failed to create artifacts directory: ${err.message}`);
+  process.exit(1);
+}
 
 const browser = await chromium.launch();
 
