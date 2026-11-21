@@ -11,7 +11,7 @@ try {
   process.exit(1);
 }
 
-const browser = await chromium.launch();
+const browser = await chromium.launch({ headless: true });
 
 // Seed data
 const seedData = {
