@@ -25,9 +25,6 @@ async function getPriceData(symbol, type) {
       case 'twse':
         url = `https://mis.twse.com.tw/stock/api/getStockInfo.jsp?ex_ch=tse_${symbol}.tw`
         break
-      case 'us':
-        url = `https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol=${symbol}&apikey=demo`
-        break
       case 'crypto':
         url = `https://api.coingecko.com/api/v3/simple/price?ids=${symbol}&vs_currencies=usd&include_24hr_change=true`
         break
@@ -47,15 +44,6 @@ async function getPriceData(symbol, type) {
         price: parseFloat(stock.z) || 0,
         change: parseFloat(stock.y) - parseFloat(stock.z) || 0,
         changePercent: ((parseFloat(stock.y) - parseFloat(stock.z)) / parseFloat(stock.y) * 100) || 0
-      }
-    } else if (type === 'us' && data['Global Quote']) {
-      const quote = data['Global Quote']
-      return {
-        symbol: quote['01. symbol'],
-        name: quote['01. symbol'],
-        price: parseFloat(quote['05. price']) || 0,
-        change: parseFloat(quote['09. change']) || 0,
-        changePercent: parseFloat(quote['10. change percent'].replace('%', '')) || 0
       }
     } else if (type === 'crypto' && data[symbol.toLowerCase()]) {
       const crypto = data[symbol.toLowerCase()]
@@ -141,7 +129,6 @@ export default async function handler(req, res) {
     // 模擬的監控清單 (實際應用中應該從資料庫獲取)
     const watchlist = [
       { symbol: '2330', type: 'twse', name: '台積電' },
-      { symbol: 'AAPL', type: 'us', name: 'Apple Inc.' },
       { symbol: 'bitcoin', type: 'crypto', name: 'Bitcoin' }
     ]
     

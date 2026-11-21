@@ -1,237 +1,134 @@
 <template>
   <div class="exchange-rate-tab">
-    <div class="tab-header">
-      <h2>匯率資訊</h2>
-      <p>即時匯率查詢與計算</p>
-    </div>
+    <h1 class="page-title">匯率資訊</h1>
 
     <div class="rate-content">
-      <!-- 主要匯率顯示 -->
+      <!-- Main rates -->
       <div class="main-rates">
-        <div class="rate-card usd-twd">
+        <div class="rate-card">
           <div class="rate-header">
-            <h3>USD/TWD</h3>
-            <p>美金對台幣</p>
+            <span class="rate-pair">USD/TWD</span>
+            <span class="rate-label">美金對台幣</span>
           </div>
-          <div class="rate-value">
-            <span class="value">{{ formatRate(usdTwdRate) }}</span>
-            <span class="currency">TWD</span>
+          <div class="rate-value number">{{ formatRate(usdTwdRate) }}</div>
+          <div class="rate-meta">
+            <span class="rate-formula">1 USD = {{ formatRate(usdTwdRate) }} TWD</span>
+            <span class="rate-updated">{{ formatTime(lastUpdated) }}</span>
           </div>
-          <div class="rate-info">
-            <span class="label">1 USD = {{ formatRate(usdTwdRate) }} TWD</span>
-            <span class="update-time">{{ formatTime(lastUpdated) }}</span>
-          </div>
-          <button
-            @click="refreshRates"
-            :disabled="loading"
-            class="refresh-btn"
-          >
-            <span
-              v-if="loading"
-              class="loading-spinner"
-            ></span>
-            <span v-else>🔄</span>
-            更新匯率
-          </button>
         </div>
 
-        <div class="rate-card twd-usd">
+        <div class="rate-card">
           <div class="rate-header">
-            <h3>TWD/USD</h3>
-            <p>台幣對美金</p>
+            <span class="rate-pair">TWD/USD</span>
+            <span class="rate-label">台幣對美金</span>
           </div>
-          <div class="rate-value">
-            <span class="value">{{ formatReverseRate(usdTwdRate) }}</span>
-            <span class="currency">USD</span>
+          <div class="rate-value number">{{ formatReverseRate(usdTwdRate) }}</div>
+          <div class="rate-meta">
+            <span class="rate-formula">1 TWD = {{ formatReverseRate(usdTwdRate) }} USD</span>
+            <span class="rate-updated">{{ formatTime(lastUpdated) }}</span>
           </div>
-          <div class="rate-info">
-            <span class="label"
-              >1 TWD = {{ formatReverseRate(usdTwdRate) }} USD</span
+        </div>
+      </div>
+
+      <button
+        @click="refreshRates"
+        :disabled="loading"
+        class="btn btn-primary refresh-btn"
+      >
+        <span v-if="loading" class="loading-spinner"></span>
+        {{ loading ? '更新中***REMOVED***' : '更新匯率' }}
+      </button>
+
+      <!-- Calculator -->
+      <div class="calculator-card">
+        <h3 class="section-title">匯率計算器</h3>
+        
+        <div class="calculator-inputs">
+          <div class="input-group">
+            <label for="usd">美金 (USD)</label>
+            <input
+              id="usd"
+              v-model="usdAmount"
+              type="number"
+              placeholder="0"
+              @input="calculateTwd"
+              class="number"
+            />
+          </div>
+          
+          <div class="equals">=</div>
+          
+          <div class="input-group">
+            <label for="twd">台幣 (TWD)</label>
+            <input
+              id="twd"
+              v-model="twdAmount"
+              type="number"
+              placeholder="0"
+              @input="calculateUsd"
+              class="number"
+            />
+          </div>
+        </div>
+
+        <div class="quick-amounts">
+          <span class="quick-label">快速計算</span>
+          <div class="quick-buttons">
+            <button
+              v-for="amount in quickAmounts"
+              :key="amount"
+              @click="setUsdAmount(amount)"
+              class="quick-btn"
             >
-            <span class="update-time">{{ formatTime(lastUpdated) }}</span>
+              ${{ amount }}
+            </button>
           </div>
         </div>
       </div>
 
-      <!-- 匯率計算器 -->
-      <div class="rate-calculator">
-        <h3>匯率計算器</h3>
-        <div class="calculator-content">
-          <div class="input-section">
-            <div class="input-group">
-              <label>美金 (USD)</label>
-              <input
-                v-model="usdAmount"
-                type="number"
-                placeholder="0"
-                @input="calculateTwd"
-              />
-            </div>
-            <div class="equals">=</div>
-            <div class="input-group">
-              <label>台幣 (TWD)</label>
-              <input
-                v-model="twdAmount"
-                type="number"
-                placeholder="0"
-                @input="calculateUsd"
-              />
-            </div>
-          </div>
-
-          <div class="quick-amounts">
-            <h4>快速計算</h4>
-            <div class="quick-buttons">
-              <button
-                v-for="amount in quickAmounts"
-                :key="amount"
-                @click="setUsdAmount(amount)"
-                class="quick-btn"
-              >
-                ${{ amount }}
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- 匯率歷史趨勢 -->
-      <div class="rate-trends">
-        <h3>匯率趨勢</h3>
-        <div class="trend-info">
+      <!-- Trends -->
+      <div class="trends-card">
+        <h3 class="section-title">匯率資訊</h3>
+        <div class="trend-items">
           <div class="trend-item">
-            <span class="label">今日開盤</span>
-            <span class="value">{{ formatRate(usdTwdRate) }}</span>
+            <span class="trend-label">今日開盤</span>
+            <span class="trend-value number">{{ formatRate(usdTwdRate) }}</span>
           </div>
           <div class="trend-item">
-            <span class="label">24小時變化</span>
-            <span class="value neutral">--</span>
+            <span class="trend-label">24小時變化</span>
+            <span class="trend-value">--</span>
           </div>
           <div class="trend-item">
-            <span class="label">更新頻率</span>
-            <span class="value">每5分鐘</span>
+            <span class="trend-label">更新頻率</span>
+            <span class="trend-value">每5分鐘</span>
           </div>
         </div>
-      </div>
-
-      <!-- 價格走勢圖表 -->
-      <div
-        v-if="false"
-        class="chart-section"
-      >
-        <div class="chart-header">
-          <h3>價格走勢圖</h3>
-          <button
-            @click="showDataInfo = true"
-            class="info-btn"
-            title="關於圖表數據"
-          >
-            ℹ️ 數據說明
-          </button>
-        </div>
-        <ExchangeRateChart
-          from-currency="USD"
-          to-currency="TWD"
-          initial-period="1W"
-        />
       </div>
     </div>
 
-    <!-- 錯誤訊息 -->
-    <div
-      v-if="error"
-      class="error-message"
-    >
+    <!-- Error message -->
+    <div v-if="error" class="message message-error">
       {{ error }}
-    </div>
-
-    <!-- 數據說明對話框 -->
-    <div
-      v-if="showDataInfo"
-      class="modal-overlay"
-      @click="showDataInfo = false"
-    >
-      <div
-        class="modal-content"
-        @click.stop
-      >
-        <div class="modal-header">
-          <h3>📊 關於匯率圖表數據</h3>
-          <button
-            @click="showDataInfo = false"
-            class="close-btn"
-          >
-            ✕
-          </button>
-        </div>
-        <div class="modal-body">
-          <div class="info-section">
-            <h4>🔄 當前匯率</h4>
-            <p>
-              上方顯示的 USD/TWD 和 TWD/USD
-              匯率是<strong>即時真實數據</strong>，來自 ExchangeRate-API。
-            </p>
-          </div>
-
-          <div class="info-section">
-            <h4>📈 歷史走勢圖</h4>
-            <p>圖表顯示的歷史數據來源：</p>
-            <ul>
-              <li>
-                <strong>有 API Key：</strong>使用 FreeCurrencyAPI
-                提供的真實歷史匯率數據
-              </li>
-              <li>
-                <strong>無 API Key：</strong
-                >基於當前匯率生成的模擬數據（僅供參考）
-              </li>
-              <li>系統會自動選擇最佳數據來源</li>
-            </ul>
-          </div>
-
-          <div class="info-section">
-            <h4>💡 使用建議</h4>
-            <ul>
-              <li>參考圖表了解匯率可能的波動趨勢</li>
-              <li>實際交易請以即時匯率為準</li>
-              <li>如需精確歷史數據，建議使用專業金融平台</li>
-            </ul>
-          </div>
-        </div>
-        <div class="modal-footer">
-          <button
-            @click="showDataInfo = false"
-            class="confirm-btn"
-          >
-            了解
-          </button>
-        </div>
-      </div>
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted, onUnmounted } from 'vue';
+import { ref, onMounted } from 'vue';
 import { storeToRefs } from 'pinia';
 import { useExchangeRateStore } from '../../stores/exchangeRate.js';
-import ExchangeRateChart from './ExchangeRateChart.vue';
 
 const exchangeRateStore = useExchangeRateStore();
 const { usdTwdRate, lastUpdatedAt } = storeToRefs(exchangeRateStore);
 const lastUpdated = lastUpdatedAt;
 
-// 狀態
 const loading = ref(false);
 const error = ref('');
 const usdAmount = ref(1);
 const twdAmount = ref(0);
-const showDataInfo = ref(false);
 
-// 快速計算金額
 const quickAmounts = [1, 10, 100, 1000, 10000];
 
-// 格式化匯率
 const formatRate = (rate) => {
   if (!rate || isNaN(rate)) return '--';
   return rate.toLocaleString('en-US', {
@@ -240,7 +137,6 @@ const formatRate = (rate) => {
   });
 };
 
-// 格式化反向匯率
 const formatReverseRate = (rate) => {
   if (!rate || isNaN(rate)) return '--';
   const reverse = 1 / rate;
@@ -250,10 +146,9 @@ const formatReverseRate = (rate) => {
   });
 };
 
-// 格式化時間
 const formatTime = (timeString) => {
   if (!timeString) return '--';
-
+  
   const date = new Date(timeString);
   const now = new Date();
   const diffMs = now - date;
@@ -273,7 +168,6 @@ const formatTime = (timeString) => {
   });
 };
 
-// 計算台幣金額
 const calculateTwd = () => {
   if (!usdAmount.value || isNaN(usdAmount.value) || !usdTwdRate.value) {
     twdAmount.value = 0;
@@ -282,7 +176,6 @@ const calculateTwd = () => {
   twdAmount.value = (usdAmount.value * usdTwdRate.value).toFixed(2);
 };
 
-// 計算美金金額
 const calculateUsd = () => {
   if (!twdAmount.value || isNaN(twdAmount.value) || !usdTwdRate.value) {
     usdAmount.value = 0;
@@ -291,13 +184,11 @@ const calculateUsd = () => {
   usdAmount.value = (twdAmount.value / usdTwdRate.value).toFixed(6);
 };
 
-// 設定美金金額
 const setUsdAmount = (amount) => {
   usdAmount.value = amount;
   calculateTwd();
 };
 
-// 更新匯率（取得後會自動存入 localStorage）
 const refreshRates = async () => {
   loading.value = true;
   error.value = '';
@@ -313,148 +204,121 @@ const refreshRates = async () => {
   }
 };
 
-// 初始化
 onMounted(async () => {
   await refreshRates();
 });
-
-// 清理（保留以備未來使用）
-onUnmounted(() => {});
 </script>
 
 <style scoped>
 .exchange-rate-tab {
-  padding: 24px;
+  max-width: 800px;
 }
 
-.tab-header {
-  text-align: center;
-  margin-bottom: 32px;
-}
-
-.tab-header h2 {
-  margin: 0 0 8px 0;
-  color: #ffffff;
-  font-size: 28px;
-  font-weight: 700;
-}
-
-.tab-header p {
-  margin: 0;
-  color: #b0bec5;
-  font-size: 16px;
+.page-title {
+  font-size: var(--text-xl);
+  font-weight: var(--font-medium);
+  margin: 0 0 var(--space-6) 0;
+  color: var(--text-primary);
 }
 
 .rate-content {
   display: flex;
   flex-direction: column;
-  gap: 24px;
+  gap: var(--space-6);
 }
 
 .main-rates {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  gap: 20px;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: var(--space-4);
 }
 
 .rate-card {
-  background: #2c2c54;
-  border-radius: 12px;
-  padding: 24px;
-  border: 1px solid #40407a;
-  transition: all 0.3s ease;
+  background: var(--bg-raised);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-md);
+  padding: var(--space-4);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
 }
 
-.rate-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+.rate-header {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
 }
 
-.rate-card.usd-twd {
-  border-left: 4px solid #4caf50;
+.rate-pair {
+  font-size: var(--text-base);
+  font-weight: var(--font-medium);
+  color: var(--text-primary);
+  font-variant-numeric: tabular-nums;
 }
 
-.rate-card.twd-usd {
-  border-left: 4px solid #ff9800;
-}
-
-.rate-header h3 {
-  margin: 0 0 4px 0;
-  color: #ffffff;
-  font-size: 20px;
-  font-weight: 700;
-}
-
-.rate-header p {
-  margin: 0 0 16px 0;
-  color: #b0bec5;
-  font-size: 14px;
+.rate-label {
+  font-size: var(--text-xs);
+  color: var(--text-muted);
 }
 
 .rate-value {
-  display: flex;
-  align-items: baseline;
-  gap: 8px;
-  margin-bottom: 16px;
-}
-
-.rate-value .value {
   font-size: 32px;
-  font-weight: 700;
-  color: #ffffff;
+  font-weight: var(--font-medium);
+  color: var(--text-primary);
+  font-variant-numeric: tabular-nums;
+  font-family: var(--font-mono);
 }
 
-.rate-value .currency {
-  font-size: 16px;
-  color: #b0bec5;
-  font-weight: 500;
-}
-
-.rate-info {
+.rate-meta {
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  margin-bottom: 20px;
+  gap: var(--space-1);
+  padding-top: var(--space-2);
+  border-top: 1px solid var(--border-subtle);
 }
 
-.rate-info .label {
-  color: #b0bec5;
-  font-size: 14px;
+.rate-formula {
+  font-size: var(--text-xs);
+  color: var(--text-secondary);
+  font-variant-numeric: tabular-nums;
 }
 
-.rate-info .update-time {
-  color: #90a4ae;
-  font-size: 12px;
+.rate-updated {
+  font-size: var(--text-xs);
+  color: var(--text-muted);
 }
 
 .refresh-btn {
-  background: linear-gradient(135deg, #64b5f6, #42a5f5);
-  color: white;
+  width: fit-content;
+}
+
+.btn {
+  height: 40px;
+  padding: 0 var(--space-4);
   border: none;
-  padding: 10px 16px;
-  border-radius: 8px;
-  font-size: 14px;
-  font-weight: 600;
+  border-radius: var(--radius-md);
+  font-size: var(--text-sm);
+  font-weight: var(--font-medium);
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: all var(--duration-fast) var(--ease);
   display: flex;
   align-items: center;
-  gap: 8px;
-  width: 100%;
   justify-content: center;
+  gap: var(--space-2);
 }
 
-.refresh-btn:hover:not(:disabled) {
-  background: linear-gradient(135deg, #42a5f5, #2196f3);
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(100, 181, 246, 0.4);
+.btn-primary {
+  background: var(--accent);
+  color: var(--bg-deepest);
 }
 
-.refresh-btn:disabled {
-  background: #546e7a;
+.btn-primary:hover:not(:disabled) {
+  background: rgba(245, 165, 36, 0.9);
+}
+
+.btn-primary:disabled {
+  opacity: 0.5;
   cursor: not-allowed;
-  transform: none;
-  box-shadow: none;
 }
 
 .loading-spinner {
@@ -463,407 +327,172 @@ onUnmounted(() => {});
   border: 2px solid transparent;
   border-top: 2px solid currentColor;
   border-radius: 50%;
-  animation: spin 1s linear infinite;
+  animation: spin 0.8s linear infinite;
 }
 
 @keyframes spin {
-  0% {
-    transform: rotate(0deg);
-  }
-  100% {
-    transform: rotate(360deg);
-  }
+  to { transform: rotate(360deg); }
 }
 
-.rate-calculator {
-  background: #2c2c54;
-  border-radius: 12px;
-  padding: 24px;
-  border: 1px solid #40407a;
-}
-
-.rate-calculator h3 {
-  margin: 0 0 20px 0;
-  color: #ffffff;
-  font-size: 20px;
-  font-weight: 700;
-}
-
-.calculator-content {
+.calculator-card,
+.trends-card {
+  background: var(--bg-raised);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-md);
+  padding: var(--space-4);
   display: flex;
   flex-direction: column;
-  gap: 24px;
+  gap: var(--space-4);
 }
 
-.input-section {
+.section-title {
+  font-size: var(--text-base);
+  font-weight: var(--font-medium);
+  margin: 0;
+  color: var(--text-primary);
+}
+
+.calculator-inputs {
   display: flex;
-  align-items: center;
-  gap: 16px;
+  align-items: flex-end;
+  gap: var(--space-3);
   flex-wrap: wrap;
 }
 
 .input-group {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: var(--space-2);
   flex: 1;
-  min-width: 150px;
+  min-width: 140px;
 }
 
 .input-group label {
-  font-size: 14px;
-  color: #b0bec5;
-  font-weight: 600;
+  font-size: var(--text-sm);
+  font-weight: var(--font-medium);
+  color: var(--text-secondary);
 }
 
 .input-group input {
-  padding: 12px 16px;
-  border: 2px solid #40407a;
-  border-radius: 8px;
-  font-size: 16px;
-  background-color: #1a1a2e;
-  color: #ffffff;
-  transition: border-color 0.3s ease;
+  height: 40px;
+  padding: 0 var(--space-3);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-md);
+  font-size: var(--text-sm);
+  font-family: inherit;
+  background: var(--bg-page);
+  color: var(--text-primary);
+  transition: all var(--duration-fast) var(--ease);
 }
 
 .input-group input:focus {
   outline: none;
-  border-color: #64b5f6;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(245, 165, 36, 0.1);
 }
 
 .equals {
-  font-size: 20px;
-  font-weight: 600;
-  color: #b0bec5;
-  margin: 0 8px;
+  font-size: var(--text-lg);
+  font-weight: var(--font-medium);
+  color: var(--text-muted);
+  margin-bottom: 8px;
 }
 
-.quick-amounts h4 {
-  margin: 0 0 12px 0;
-  color: #ffffff;
-  font-size: 16px;
-  font-weight: 600;
+.quick-amounts {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.quick-label {
+  font-size: var(--text-xs);
+  font-weight: var(--font-medium);
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
 }
 
 .quick-buttons {
   display: flex;
-  gap: 8px;
+  gap: var(--space-2);
   flex-wrap: wrap;
 }
 
 .quick-btn {
-  background: #40407a;
-  color: #ffffff;
-  border: 1px solid #40407a;
-  padding: 8px 16px;
-  border-radius: 20px;
-  font-size: 14px;
-  font-weight: 600;
+  height: 32px;
+  padding: 0 var(--space-3);
+  background: var(--bg-subtle);
+  color: var(--text-secondary);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-sm);
+  font-size: var(--text-sm);
+  font-weight: var(--font-medium);
+  font-variant-numeric: tabular-nums;
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: all var(--duration-fast) var(--ease);
 }
 
 .quick-btn:hover {
-  background: #64b5f6;
-  border-color: #64b5f6;
-  transform: translateY(-1px);
+  background: var(--bg-raised);
+  color: var(--text-primary);
+  border-color: var(--border-strong);
 }
 
-.rate-trends {
-  background: #2c2c54;
-  border-radius: 12px;
-  padding: 24px;
-  border: 1px solid #40407a;
-}
-
-.rate-trends h3 {
-  margin: 0 0 20px 0;
-  color: #ffffff;
-  font-size: 20px;
-  font-weight: 700;
-}
-
-.trend-info {
+.trend-items {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-  gap: 16px;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: var(--space-4);
 }
 
 .trend-item {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: var(--space-1);
 }
 
-.trend-item .label {
-  font-size: 12px;
-  color: #b0bec5;
+.trend-label {
+  font-size: var(--text-xs);
+  color: var(--text-muted);
   text-transform: uppercase;
-  letter-spacing: 0.5px;
+  letter-spacing: 0.05em;
 }
 
-.trend-item .value {
-  font-size: 16px;
-  font-weight: 600;
-  color: #ffffff;
+.trend-value {
+  font-size: var(--text-base);
+  font-weight: var(--font-medium);
+  color: var(--text-primary);
 }
 
-.trend-item .value.neutral {
-  color: #b0bec5;
+.message {
+  padding: var(--space-3);
+  border-radius: var(--radius-md);
+  border-left-width: 3px;
+  font-size: var(--text-sm);
 }
 
-.chart-section {
-  background: #2c2c54;
-  border-radius: 12px;
-  padding: 24px;
-  border: 1px solid #40407a;
-}
-
-.chart-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 20px;
-}
-
-.chart-header h3 {
-  margin: 0;
-  color: #ffffff;
-  font-size: 20px;
-  font-weight: 700;
-}
-
-.info-btn {
-  background: #40407a;
-  color: #b0bec5;
-  border: 1px solid #40407a;
-  padding: 8px 12px;
-  border-radius: 6px;
-  font-size: 12px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.3s ease;
-}
-
-.info-btn:hover {
-  background: #64b5f6;
-  border-color: #64b5f6;
-  color: #ffffff;
-}
-
-.error-message {
-  background: rgba(244, 67, 54, 0.1);
-  color: #ffcdd2;
-  padding: 16px;
-  border-radius: 8px;
-  border-left: 4px solid #f44336;
-  margin-top: 16px;
-  font-size: 14px;
+.message-error {
+  background: rgba(229, 72, 77, 0.1);
+  color: var(--color-up);
+  border: 1px solid rgba(229, 72, 77, 0.3);
 }
 
 @media (max-width: 768px) {
-  .exchange-rate-tab {
-    padding: 16px;
-  }
-
   .main-rates {
     grid-template-columns: 1fr;
   }
 
-  .input-section {
+  .calculator-inputs {
     flex-direction: column;
     align-items: stretch;
   }
 
   .equals {
     text-align: center;
-    margin: 8px 0;
+    margin: 0;
   }
 
-  .quick-buttons {
-    justify-content: center;
-  }
-
-  .trend-info {
+  .trend-items {
     grid-template-columns: 1fr;
-  }
-}
-
-/* 對話框樣式 */
-.modal-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.7);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 1000;
-  padding: 20px;
-}
-
-.modal-content {
-  background: #2c2c54;
-  border-radius: 12px;
-  border: 1px solid #40407a;
-  max-width: 600px;
-  width: 100%;
-  max-height: 80vh;
-  overflow-y: auto;
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
-}
-
-.modal-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 20px 24px;
-  border-bottom: 1px solid #40407a;
-}
-
-.modal-header h3 {
-  margin: 0;
-  color: #ffffff;
-  font-size: 18px;
-  font-weight: 700;
-}
-
-.close-btn {
-  background: none;
-  border: none;
-  color: #b0bec5;
-  font-size: 20px;
-  cursor: pointer;
-  padding: 4px;
-  border-radius: 4px;
-  transition: all 0.3s ease;
-}
-
-.close-btn:hover {
-  background: #40407a;
-  color: #ffffff;
-}
-
-.modal-body {
-  padding: 24px;
-}
-
-.info-section {
-  margin-bottom: 24px;
-}
-
-.info-section:last-child {
-  margin-bottom: 0;
-}
-
-.info-section h4 {
-  margin: 0 0 12px 0;
-  color: #ffffff;
-  font-size: 16px;
-  font-weight: 600;
-}
-
-.info-section p {
-  margin: 0 0 8px 0;
-  color: #b0bec5;
-  font-size: 14px;
-  line-height: 1.5;
-}
-
-.info-section ul {
-  margin: 8px 0 0 0;
-  padding-left: 20px;
-  color: #b0bec5;
-  font-size: 14px;
-  line-height: 1.5;
-}
-
-.info-section li {
-  margin-bottom: 4px;
-}
-
-.info-section code {
-  background: #40407a;
-  color: #64b5f6;
-  padding: 2px 6px;
-  border-radius: 4px;
-  font-size: 12px;
-  font-family: 'Courier New', monospace;
-}
-
-.info-section a {
-  color: #64b5f6;
-  text-decoration: none;
-  font-weight: 600;
-  transition: color 0.3s ease;
-}
-
-.info-section a:hover {
-  color: #42a5f5;
-  text-decoration: underline;
-}
-
-.info-section ol {
-  margin: 8px 0 0 0;
-  padding-left: 20px;
-  color: #b0bec5;
-  font-size: 14px;
-  line-height: 1.8;
-}
-
-.info-section ol li {
-  margin-bottom: 8px;
-}
-
-.modal-footer {
-  padding: 20px 24px;
-  border-top: 1px solid #40407a;
-  text-align: right;
-}
-
-.confirm-btn {
-  background: linear-gradient(135deg, #64b5f6, #42a5f5);
-  color: white;
-  border: none;
-  padding: 10px 20px;
-  border-radius: 8px;
-  font-size: 14px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.3s ease;
-}
-
-.confirm-btn:hover {
-  background: linear-gradient(135deg, #42a5f5, #2196f3);
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(100, 181, 246, 0.4);
-}
-
-@media (max-width: 768px) {
-  .modal-overlay {
-    padding: 10px;
-  }
-
-  .modal-content {
-    max-height: 90vh;
-  }
-
-  .modal-header,
-  .modal-body,
-  .modal-footer {
-    padding: 16px;
-  }
-
-  .chart-header {
-    flex-direction: column;
-    align-items: stretch;
-    gap: 12px;
-  }
-
-  .info-btn {
-    align-self: flex-start;
   }
 }
 </style>

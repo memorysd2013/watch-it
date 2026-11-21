@@ -15,11 +15,8 @@ coverage
 *.local
 
 # 環境變數檔案 (包含敏感資訊)
-.env
-.env.local
-.env.prod
-.env.production
-.env.development
+.env*
+!.env.example
 
 /cypress/videos/
 /cypress/screenshots/

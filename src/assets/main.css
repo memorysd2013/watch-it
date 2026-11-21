@@ -1,69 +1,181 @@
 @import './base.css';
 
-/* 全域暗色科技主題 */
-* {
-  box-sizing: border-box;
-}
-
+/* Main App Layout */
 body {
   margin: 0;
   padding: 0;
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  background: var(--gradient-bg);
-  color: var(--text-primary);
-  min-height: 100vh;
-  position: relative;
-  overflow-x: hidden;
-}
-
-/* 科技感背景動畫效果 */
-body::before {
-  content: '';
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: 
-    radial-gradient(circle at 20% 50%, rgba(0, 217, 255, 0.03) 0%, transparent 50%),
-    radial-gradient(circle at 80% 80%, rgba(103, 58, 183, 0.03) 0%, transparent 50%);
-  pointer-events: none;
-  z-index: 0;
 }
 
 #app {
-  max-width: 1280px;
-  margin: 0 auto;
-  font-weight: normal;
-  position: relative;
-  z-index: 1;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
 }
 
-a,
-.green {
+/* Links */
+a {
+  color: var(--accent);
   text-decoration: none;
-  color: var(--accent-cyan);
-  transition: all 0.3s ease;
-  padding: 3px;
-  position: relative;
+  transition: color var(--duration-fast) var(--ease);
 }
 
-@media (hover: hover) {
-  a:hover {
-    color: var(--text-bright);
-    background-color: rgba(0, 217, 255, 0.15);
-    box-shadow: 0 0 10px rgba(0, 217, 255, 0.2);
+a:hover {
+  color: var(--accent-hover);
+}
+
+/* Buttons - quiet by default */
+button {
+  font-family: inherit;
+  font-size: inherit;
+  cursor: pointer;
+  border: none;
+  background: none;
+  padding: 0;
+  color: inherit;
+}
+
+/* Utility classes */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
+
+/* Number formatting */
+.number {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Price changes */
+.price-up {
+  color: var(--color-up);
+}
+
+.price-down {
+  color: var(--color-down);
+}
+
+/* Price flash animations */
+@keyframes flash-up {
+  0%, 100% {
+    background-color: transparent;
+  }
+  50% {
+    background-color: rgba(229, 72, 77, 0.2);
   }
 }
 
-/* 移除預設的網格佈局 */
-@media (min-width: 1024px) {
-  body {
-    display: block;
+@keyframes flash-down {
+  0%, 100% {
+    background-color: transparent;
   }
+  50% {
+    background-color: rgba(48, 164, 108, 0.2);
+  }
+}
 
-  #app {
-    display: block;
-    padding: 0;
+.flash-up {
+  animation: flash-up 150ms var(--ease);
+}
+
+.flash-down {
+  animation: flash-down 150ms var(--ease);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .flash-up,
+  .flash-down {
+    animation: none;
+  }
+}
+
+/* Loading state */
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.loading-spinner {
+  display: inline-block;
+  width: 1em;
+  height: 1em;
+  border: 2px solid transparent;
+  border-top-color: currentColor;
+  border-radius: 50%;
+  animation: spin var(--duration-slow) linear infinite;
+}
+
+/* Card */
+.card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-hairline);
+  border-radius: var(--radius-md);
+  padding: var(--space-5);
+}
+
+/* Input */
+input,
+select,
+textarea {
+  font-family: inherit;
+  font-size: inherit;
+  color: var(--text-primary);
+  background: var(--bg-raised);
+  border: 1px solid var(--border-hairline);
+  border-radius: var(--radius-sm);
+  padding: var(--space-2) var(--space-3);
+  transition: border-color var(--duration-fast) var(--ease);
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
+/* Button variants */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-4);
+  border-radius: var(--radius-sm);
+  font-weight: var(--font-medium);
+  transition: all var(--duration-fast) var(--ease);
+}
+
+.btn-primary {
+  background: var(--accent);
+  color: var(--bg-page);
+}
+
+.btn-primary:hover {
+  background: var(--accent-hover);
+}
+
+.btn-secondary {
+  background: var(--bg-raised);
+  border: 1px solid var(--border-hairline);
+  color: var(--text-primary);
+}
+
+.btn-secondary:hover {
+  background: var(--bg-card);
+}
+
+/* Responsive breakpoints */
+@media (max-width: 768px) {
+  html {
+    font-size: 14px;
   }
 }

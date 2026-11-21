@@ -1,10 +1,5 @@
 <template>
   <div class="search-form">
-    <div class="search-header">
-      <h2>新增監控項目</h2>
-      <p>搜尋台股、美股或加密貨幣代號</p>
-    </div>
-
     <form
       @submit.prevent="handleSubmit"
       class="search-form-content"
@@ -15,7 +10,7 @@
           id="symbol"
           v-model="form.symbol"
           type="text"
-          placeholder="例如: 2330, AAPL, bitcoin"
+          placeholder="例如: 2330, bitcoin"
           required
           :disabled="loading"
         />
@@ -31,7 +26,6 @@
         >
           <option value="">選擇類型</option>
           <option value="twse">台股</option>
-          <option value="us">美股</option>
           <option value="crypto">加密貨幣</option>
         </select>
       </div>
@@ -98,7 +92,7 @@
 <script setup>
 import { ref, reactive, watch } from 'vue';
 import { useWatchlistStore } from '../../stores/watchlist.js';
-import { cryptoAPI } from '../../services/api.js';
+import { cryptoAPI } from '../../services/api/index.js';
 
 const watchlistStore = useWatchlistStore();
 
@@ -186,163 +180,141 @@ watch([() => form.symbol, () => form.type], clearMessages);
 
 <style scoped>
 .search-form {
-  padding: 24px;
-}
-
-.search-header {
-  text-align: center;
-  margin-bottom: 24px;
-}
-
-.search-header h2 {
-  margin: 0 0 8px 0;
-  color: var(--text-bright);
-  font-size: 24px;
-  text-shadow: 0 0 20px rgba(255, 255, 255, 0.2);
-}
-
-.search-header p {
-  margin: 0;
-  color: var(--text-secondary);
-  font-size: 14px;
+  max-width: 560px;
 }
 
 .search-form-content {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: var(--space-4);
 }
 
 .form-group {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: var(--space-2);
 }
 
 .form-group label {
-  font-weight: 600;
-  color: var(--text-bright);
-  font-size: 14px;
+  font-size: var(--text-sm);
+  font-weight: var(--font-medium);
+  color: var(--text-secondary);
 }
 
 .form-group input,
 .form-group select {
-  padding: 12px;
-  border: 1px solid var(--border-color);
-  border-radius: 10px;
-  font-size: 16px;
-  background-color: rgba(25, 32, 56, 0.5);
-  color: var(--text-bright);
-  transition: all 0.3s ease;
-  backdrop-filter: blur(10px);
+  height: 40px;
+  padding: 0 var(--space-3);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-md);
+  font-size: var(--text-sm);
+  font-family: inherit;
+  background: var(--bg-raised);
+  color: var(--text-primary);
+  transition: all var(--duration-fast) var(--ease);
+}
+
+.form-group select {
+  cursor: pointer;
 }
 
 .form-group input:focus,
 .form-group select:focus {
   outline: none;
-  border-color: var(--accent-cyan);
-  box-shadow: 0 0 15px rgba(0, 217, 255, 0.3);
-  background-color: rgba(25, 32, 56, 0.8);
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(245, 165, 36, 0.1);
+  background: var(--bg-page);
 }
 
 .form-group input:disabled,
 .form-group select:disabled {
-  background-color: rgba(13, 17, 36, 0.5);
+  background: var(--bg-subtle);
   cursor: not-allowed;
-  opacity: 0.5;
+  opacity: 0.6;
 }
 
 .submit-btn {
-  background: linear-gradient(135deg, var(--accent-cyan), var(--accent-blue));
-  color: var(--bg-primary);
-  border: 1px solid var(--accent-cyan);
-  padding: 14px 24px;
-  border-radius: 10px;
-  font-size: 16px;
-  font-weight: 700;
+  height: 40px;
+  background: var(--accent);
+  color: var(--bg-deepest);
+  border: none;
+  border-radius: var(--radius-md);
+  font-size: var(--text-sm);
+  font-weight: var(--font-medium);
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: all var(--duration-fast) var(--ease);
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
-  box-shadow: 0 0 20px rgba(0, 217, 255, 0.3);
+  gap: var(--space-2);
+  margin-top: var(--space-2);
 }
 
 .submit-btn:hover:not(:disabled) {
-  background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
-  transform: translateY(-2px);
-  box-shadow: 0 0 30px rgba(0, 217, 255, 0.5),
-    0 4px 20px rgba(33, 150, 243, 0.4);
+  background: rgba(245, 165, 36, 0.9);
+}
+
+.submit-btn:active:not(:disabled) {
+  transform: translateY(1px);
 }
 
 .submit-btn:disabled {
-  background: var(--bg-tertiary);
-  border-color: var(--border-color);
+  background: var(--bg-raised);
+  color: var(--text-muted);
   cursor: not-allowed;
-  transform: none;
-  box-shadow: none;
   opacity: 0.5;
 }
 
 .loading-spinner {
-  width: 16px;
-  height: 16px;
+  width: 14px;
+  height: 14px;
   border: 2px solid transparent;
-  border-top: 2px solid white;
+  border-top: 2px solid currentColor;
   border-radius: 50%;
-  animation: spin 1s linear infinite;
+  animation: spin 0.8s linear infinite;
 }
 
 @keyframes spin {
-  0% {
-    transform: rotate(0deg);
-  }
-  100% {
-    transform: rotate(360deg);
-  }
+  to { transform: rotate(360deg); }
 }
 
 .error-message {
-  background: rgba(255, 71, 87, 0.15);
-  color: var(--danger);
-  padding: 12px;
-  border-radius: 10px;
-  border: 1px solid var(--danger);
-  border-left: 4px solid var(--danger);
-  margin-top: 16px;
-  font-size: 14px;
-  box-shadow: 0 0 15px rgba(255, 71, 87, 0.2);
-  backdrop-filter: blur(10px);
+  background: rgba(229, 72, 77, 0.1);
+  color: var(--color-up);
+  padding: var(--space-3);
+  border-radius: var(--radius-md);
+  border: 1px solid rgba(229, 72, 77, 0.3);
+  border-left-width: 3px;
+  margin-top: var(--space-4);
+  font-size: var(--text-sm);
 }
 
 .success-message {
-  background: rgba(0, 255, 136, 0.15);
-  color: var(--success);
-  padding: 12px;
-  border-radius: 10px;
-  border: 1px solid var(--success);
-  border-left: 4px solid var(--success);
-  margin-top: 16px;
-  font-size: 14px;
-  box-shadow: 0 0 15px rgba(0, 255, 136, 0.2);
-  backdrop-filter: blur(10px);
+  background: rgba(48, 164, 108, 0.1);
+  color: var(--color-down);
+  padding: var(--space-3);
+  border-radius: var(--radius-md);
+  border: 1px solid rgba(48, 164, 108, 0.3);
+  border-left-width: 3px;
+  margin-top: var(--space-4);
+  font-size: var(--text-sm);
 }
 
 .suggestions {
-  margin-top: 16px;
-  padding: 16px;
-  background: var(--card-bg);
-  border-radius: 12px;
-  border: 1px solid var(--border-color);
-  box-shadow: var(--shadow-md);
-  backdrop-filter: blur(10px);
+  margin-top: var(--space-4);
+  padding: var(--space-3);
+  background: var(--bg-raised);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-default);
 }
 
 .suggestions h4 {
-  margin: 0 0 12px 0;
-  color: var(--text-bright);
-  font-size: 14px;
+  margin: 0 0 var(--space-2) 0;
+  color: var(--text-secondary);
+  font-size: var(--text-xs);
+  font-weight: var(--font-medium);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
 }
 
 .suggestions ul {
@@ -355,36 +327,26 @@ watch([() => form.symbol, () => form.type], clearMessages);
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 8px 12px;
-  border-radius: 8px;
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-sm);
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: background var(--duration-fast) var(--ease);
   border: 1px solid transparent;
 }
 
 .suggestion-item:hover {
-  background: rgba(0, 217, 255, 0.1);
-  border-color: var(--accent-cyan);
-  box-shadow: 0 0 15px rgba(0, 217, 255, 0.2);
+  background: var(--bg-subtle);
+  border-color: var(--border-default);
 }
 
 .suggestion-symbol {
-  font-weight: 700;
-  color: var(--accent-cyan);
+  font-weight: var(--font-medium);
+  color: var(--text-primary);
+  font-variant-numeric: tabular-nums;
 }
 
 .suggestion-name {
-  color: var(--text-secondary);
-  font-size: 14px;
-}
-
-@media (max-width: 768px) {
-  .search-form {
-    padding: 16px;
-  }
-
-  .search-header h2 {
-    font-size: 20px;
-  }
+  color: var(--text-muted);
+  font-size: var(--text-sm);
 }
 </style>

@@ -9,13 +9,15 @@
             class="toggle-view-btn"
             @click="viewMode = viewMode === 'list' ? 'chart' : 'list'"
           >
-            {{ viewMode === 'list' ? '📊 圖表' : '📋 列表' }}
+            <component :is="viewMode === 'list' ? BarChart3 : List" :size="16" />
+            {{ viewMode === 'list' ? '圖表' : '列表' }}
           </button>
           <button
             class="add-asset-btn"
             @click="openAddAsset"
           >
-            ➕ 新增資產項目
+            <Plus :size="16" />
+            新增資產項目
           </button>
         </div>
       </div>
@@ -49,13 +51,14 @@
       v-if="assetItems.length === 0"
       class="empty-state"
     >
-      <div class="empty-icon">📈</div>
+      <BarChart3 :size="48" class="empty-icon" />
       <h3>還沒有資產項目</h3>
       <p>點擊「新增資產項目」開始記錄您的資產配置</p>
       <button
         class="add-first-btn"
         @click="openAddAsset"
       >
+        <Plus :size="16" />
         新增第一個資產項目
       </button>
     </div>
@@ -109,6 +112,7 @@ import AssetItemCard from './AssetItemCard.vue';
 import AssetAllocationChart from './AssetAllocationChart.vue';
 import AssetItemForm from './AssetItemForm.vue';
 import SubItemForm from './SubItemForm.vue';
+import { BarChart3, List, Plus } from 'lucide-vue-next';
 
 const store = useAssetAllocationStore();
 const exchangeStore = useExchangeRateStore();
@@ -339,7 +343,7 @@ const closeSubForm = () => {
   height: 34px;
   display: inline-flex;
   align-items: center;
-  background: linear-gradient(135deg, var(--accent-cyan), var(--accent-blue));
+  background: var(--accent);
   color: var(--bg-primary);
   border: 1px solid var(--accent-cyan);
   border-radius: 8px;
@@ -356,48 +360,54 @@ const closeSubForm = () => {
 }
 
 .empty-state {
-  text-align: center;
-  padding: 60px 20px;
-  background: var(--card-bg);
-  border-radius: 16px;
-  border: 1px solid var(--border-color);
-  box-shadow: var(--shadow-md);
-  backdrop-filter: blur(10px);
+  max-width: 480px;
+  padding: var(--space-8);
+  background: var(--bg-raised);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-default);
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-3);
+  text-align: left;
 }
 
 .empty-icon {
-  font-size: 48px;
-  margin-bottom: 16px;
-  filter: drop-shadow(0 0 20px rgba(0, 217, 255, 0.3));
+  color: var(--text-muted);
+  flex-shrink: 0;
 }
 
 .empty-state h3 {
-  margin: 0 0 8px 0;
-  color: var(--text-bright);
-  font-size: 20px;
+  margin: 0;
+  color: var(--text-primary);
+  font-size: var(--text-lg);
+  font-weight: var(--font-medium);
 }
 
 .empty-state p {
-  margin: 0 0 24px 0;
+  margin: 0;
   color: var(--text-secondary);
-  font-size: 14px;
+  font-size: var(--text-sm);
 }
 
 .add-first-btn {
-  padding: 12px 24px;
-  background: linear-gradient(135deg, var(--accent-cyan), var(--accent-blue));
-  color: var(--bg-primary);
+  height: 40px;
+  padding: 0 var(--space-4);
+  background: var(--accent);
+  color: var(--bg-deepest);
   border: none;
-  border-radius: 10px;
-  font-size: 15px;
-  font-weight: 700;
+  border-radius: var(--radius-md);
+  font-size: var(--text-sm);
+  font-weight: var(--font-medium);
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: all var(--duration-fast) var(--ease);
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
 }
 
 .add-first-btn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 0 25px rgba(0, 217, 255, 0.5);
+  background: rgba(245, 165, 36, 0.9);
 }
 
 .asset-content {

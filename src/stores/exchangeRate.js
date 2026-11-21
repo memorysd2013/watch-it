@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia';
-import { exchangeRateAPI } from '../services/api.js';
+import { exchangeRateAPI } from '../services/api/index.js';
 
 const STORAGE_KEY = 'watchit_usd_twd_rate';
 const DEFAULT_USD_TWD_RATE = 31.5;
