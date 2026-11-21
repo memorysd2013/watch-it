@@ -249,10 +249,6 @@ export const twseAPI = {
   }
 }
 
-// 美股 API 服務
-  }
-}
-
 // 加密貨幣 API 服務
 export const cryptoAPI = {
   // 獲取加密貨幣價格
