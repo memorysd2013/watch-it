@@ -55,6 +55,10 @@ onUnmounted(() => {
 .app-layout {
   min-height: 100vh;
   display: flex;
+  /* Safe area support for notch/Dynamic Island */
+  padding-top: env(safe-area-inset-top);
+  padding-left: env(safe-area-inset-left);
+  padding-right: env(safe-area-inset-right);
 }
 
 /* Desktop: fixed left nav */
@@ -86,7 +90,8 @@ onUnmounted(() => {
   .app-main {
     flex: 1;
     padding: var(--space-4);
-    padding-bottom: calc(var(--space-16) + var(--space-4));
+    /* Account for mobile tab bar (60px) + safe area */
+    padding-bottom: calc(60px + var(--space-4) + env(safe-area-inset-bottom));
   }
 
   .mobile-tab-bar {
