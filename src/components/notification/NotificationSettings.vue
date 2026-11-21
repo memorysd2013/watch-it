@@ -1,24 +1,19 @@
 <template>
   <div class="notification-settings">
-    <div class="settings-header">
-      <h3>推播通知設定</h3>
-      <p>設定價格變動和每日摘要通知</p>
-    </div>
-
     <div class="settings-content">
-      <!-- 支援狀態 -->
+      <!-- Support status -->
       <div class="support-status">
         <div class="status-item">
-          <span class="status-label">瀏覽器支援:</span>
+          <span class="status-label">瀏覽器支援</span>
           <span
             class="status-value"
-            :class="supportStatus.isSupported ? 'supported' : 'not-supported'"
+            :class="supportStatus.isSupported ? 'status-ok' : 'status-error'"
           >
-            {{ supportStatus.isSupported ? '✅ 支援' : '❌ 不支援' }}
+            {{ supportStatus.isSupported ? '支援' : '不支援' }}
           </span>
         </div>
         <div class="status-item">
-          <span class="status-label">通知權限:</span>
+          <span class="status-label">通知權限</span>
           <span
             class="status-value"
             :class="getPermissionClass()"
@@ -27,69 +22,67 @@
           </span>
         </div>
         <div class="status-item">
-          <span class="status-label">Service Worker:</span>
+          <span class="status-label">Service Worker</span>
           <span
             class="status-value"
             :class="
-              supportStatus.hasServiceWorker ? 'supported' : 'not-supported'
+              supportStatus.hasServiceWorker ? 'status-ok' : 'status-error'
             "
           >
-            {{ supportStatus.hasServiceWorker ? '✅ 已註冊' : '❌ 未註冊' }}
+            {{ supportStatus.hasServiceWorker ? '已註冊' : '未註冊' }}
           </span>
         </div>
       </div>
 
-      <!-- 通知設定 -->
+      <!-- Notification options -->
       <div class="notification-options">
-        <div class="option-group">
-          <label class="option-label">
-            <input
-              type="checkbox"
-              v-model="settings.priceAlerts"
-              :disabled="!canEnableNotifications"
-            />
-            <span class="checkmark"></span>
-            價格變動通知
-          </label>
-          <p class="option-description">
-            當監控的股票或加密貨幣價格有顯著變動時發送通知
-          </p>
-        </div>
+        <label class="option-label">
+          <input
+            type="checkbox"
+            v-model="settings.priceAlerts"
+            :disabled="!canEnableNotifications"
+          />
+          <span class="checkmark"></span>
+          <span class="label-text">
+            <span class="label-title">價格變動通知</span>
+            <span class="label-desc">當監控的股票或加密貨幣價格有顯著變動時發送通知</span>
+          </span>
+        </label>
 
-        <div class="option-group">
-          <label class="option-label">
-            <input
-              type="checkbox"
-              v-model="settings.dailySummary"
-              :disabled="!canEnableNotifications"
-            />
-            <span class="checkmark"></span>
-            每日摘要通知
-          </label>
-          <p class="option-description">每天定時發送監控清單的價格摘要</p>
-        </div>
+        <label class="option-label">
+          <input
+            type="checkbox"
+            v-model="settings.dailySummary"
+            :disabled="!canEnableNotifications"
+          />
+          <span class="checkmark"></span>
+          <span class="label-text">
+            <span class="label-title">每日摘要通知</span>
+            <span class="label-desc">每天定時發送監控清單的價格摘要</span>
+          </span>
+        </label>
 
-        <div class="option-group">
-          <label class="option-label">
-            <input
-              type="checkbox"
-              v-model="settings.soundEnabled"
-              :disabled="!canEnableNotifications"
-            />
-            <span class="checkmark"></span>
-            通知音效
-          </label>
-          <p class="option-description">發送通知時播放音效</p>
-        </div>
+        <label class="option-label">
+          <input
+            type="checkbox"
+            v-model="settings.soundEnabled"
+            :disabled="!canEnableNotifications"
+          />
+          <span class="checkmark"></span>
+          <span class="label-text">
+            <span class="label-title">通知音效</span>
+            <span class="label-desc">發送通知時播放音效</span>
+          </span>
+        </label>
       </div>
 
-      <!-- 操作按鈕 -->
+      <!-- Action buttons -->
       <div class="action-buttons">
         <button
           v-if="!isSubscribed"
           @click="enableNotifications"
           :disabled="loading || !supportStatus.isSupported"
-          class="enable-btn"
+          class="btn btn-primary"
         >
           <span
             v-if="loading"
@@ -102,7 +95,7 @@
           v-if="isSubscribed"
           @click="disableNotifications"
           :disabled="loading"
-          class="disable-btn"
+          class="btn btn-danger"
         >
           <span
             v-if="loading"
@@ -114,40 +107,39 @@
         <button
           @click="testNotification"
           :disabled="!canEnableNotifications || loading"
-          class="test-btn"
+          class="btn btn-secondary"
         >
           測試通知
         </button>
       </div>
 
-      <!-- 訂閱資訊 -->
+      <!-- Subscription info -->
       <div
         v-if="isSubscribed"
         class="subscription-info"
       >
-        <h4>訂閱資訊</h4>
         <div class="info-item">
-          <span class="info-label">訂閱狀態:</span>
-          <span class="info-value">✅ 已啟用</span>
+          <span class="info-label">訂閱狀態</span>
+          <span class="info-value status-ok">已啟用</span>
         </div>
         <div class="info-item">
-          <span class="info-label">啟用時間:</span>
+          <span class="info-label">啟用時間</span>
           <span class="info-value">{{ formatTime(subscriptionTime) }}</span>
         </div>
       </div>
 
-      <!-- 錯誤訊息 -->
+      <!-- Error message -->
       <div
         v-if="error"
-        class="error-message"
+        class="message message-error"
       >
         {{ error }}
       </div>
 
-      <!-- 成功訊息 -->
+      <!-- Success message -->
       <div
         v-if="success"
-        class="success-message"
+        class="message message-success"
       >
         {{ success }}
       </div>
@@ -156,13 +148,12 @@
 </template>
 
 <script setup>
-import { ref, reactive, computed, onMounted } from 'vue';
+import { ref, reactive, computed, onMounted, watch } from 'vue';
 import { useWatchlistStore } from '../../stores/watchlist.js';
 import notificationService from '../../services/notification.js';
 
 const watchlistStore = useWatchlistStore();
 
-// 狀態
 const loading = ref(false);
 const error = ref('');
 const success = ref('');
@@ -174,14 +165,12 @@ const supportStatus = ref({
   hasServiceWorker: false,
 });
 
-// 設定
 const settings = reactive({
   priceAlerts: true,
   dailySummary: true,
   soundEnabled: true,
 });
 
-// 計算屬性
 const canEnableNotifications = computed(() => {
   return (
     supportStatus.value.isSupported &&
@@ -190,18 +179,17 @@ const canEnableNotifications = computed(() => {
   );
 });
 
-// 方法
 const getPermissionText = () => {
   const permission = supportStatus.value.permission;
   switch (permission) {
     case 'granted':
-      return '✅ 已授權';
+      return '已授權';
     case 'denied':
-      return '❌ 已拒絕';
+      return '已拒絕';
     case 'default':
-      return '⚠️ 未設定';
+      return '未設定';
     default:
-      return '❓ 未知';
+      return '未知';
   }
 };
 
@@ -209,13 +197,13 @@ const getPermissionClass = () => {
   const permission = supportStatus.value.permission;
   switch (permission) {
     case 'granted':
-      return 'supported';
+      return 'status-ok';
     case 'denied':
-      return 'not-supported';
+      return 'status-error';
     case 'default':
-      return 'warning';
+      return 'status-warning';
     default:
-      return 'not-supported';
+      return 'status-error';
   }
 };
 
@@ -230,26 +218,19 @@ const enableNotifications = async () => {
   success.value = '';
 
   try {
-    // 初始化通知服務
     await notificationService.initialize();
-
-    // 請求權限
     const granted = await notificationService.requestPermission();
     if (!granted) {
       throw new Error('通知權限被拒絕');
     }
 
-    // 訂閱推播
-    const subscription = await notificationService.subscribe();
-
-    // 儲存設定
+    await notificationService.subscribe();
     watchlistStore.setNotificationsEnabled(true);
 
     isSubscribed.value = true;
     subscriptionTime.value = new Date().toISOString();
-    success.value = '推播通知已成功啟用！';
+    success.value = '推播通知已成功啟用';
 
-    // 更新支援狀態
     updateSupportStatus();
   } catch (err) {
     error.value = err.message;
@@ -265,7 +246,6 @@ const disableNotifications = async () => {
 
   try {
     await notificationService.unsubscribe();
-
     watchlistStore.setNotificationsEnabled(false);
 
     isSubscribed.value = false;
@@ -283,7 +263,7 @@ const disableNotifications = async () => {
 const testNotification = () => {
   try {
     notificationService.showNotification('測試通知', {
-      body: '這是一個測試通知，如果您看到這個訊息，表示推播通知功能正常運作！',
+      body: '這是一個測試通知，如果您看到這個訊息，表示推播通知功能正常運作',
       icon: '/favicon.ico',
       requireInteraction: true,
     });
@@ -303,7 +283,6 @@ const checkSubscriptionStatus = async () => {
     isSubscribed.value = !!subscription;
 
     if (subscription) {
-      // 從本地儲存載入訂閱時間
       const savedTime = localStorage.getItem('subscriptionTime');
       if (savedTime) {
         subscriptionTime.value = savedTime;
@@ -334,65 +313,35 @@ const saveSettings = () => {
   }
 };
 
-// 生命週期
 onMounted(async () => {
-  // 載入設定
   loadSettings();
-
-  // 載入通知狀態
   watchlistStore.loadNotificationsState();
-
-  // 更新支援狀態
   updateSupportStatus();
-
-  // 檢查訂閱狀態
   await checkSubscriptionStatus();
 });
 
-// 監聽設定變化
-import { watch } from 'vue';
 watch(settings, saveSettings, { deep: true });
 </script>
 
 <style scoped>
 .notification-settings {
-  padding: 24px;
-}
-
-.settings-header {
-  text-align: center;
-  margin-bottom: 24px;
-}
-
-.settings-header h3 {
-  margin: 0 0 8px 0;
-  color: var(--text-bright);
-  font-size: 20px;
-  text-shadow: 0 0 20px rgba(255, 255, 255, 0.2);
-}
-
-.settings-header p {
-  margin: 0;
-  color: var(--text-secondary);
-  font-size: 14px;
+  max-width: 640px;
 }
 
 .settings-content {
   display: flex;
   flex-direction: column;
-  gap: 24px;
+  gap: var(--space-6);
 }
 
 .support-status {
-  background: var(--card-bg);
-  padding: 16px;
-  border-radius: 12px;
-  border: 1px solid var(--border-color);
+  background: var(--bg-raised);
+  padding: var(--space-4);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-default);
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  backdrop-filter: blur(10px);
-  box-shadow: var(--shadow-md);
+  gap: var(--space-3);
 }
 
 .status-item {
@@ -402,49 +351,39 @@ watch(settings, saveSettings, { deep: true });
 }
 
 .status-label {
-  font-size: 14px;
+  font-size: var(--text-sm);
   color: var(--text-secondary);
 }
 
 .status-value {
-  font-size: 14px;
-  font-weight: 600;
+  font-size: var(--text-sm);
+  font-weight: var(--font-medium);
+  font-variant-numeric: tabular-nums;
 }
 
-.status-value.supported {
-  color: var(--success);
-  text-shadow: 0 0 10px rgba(0, 255, 136, 0.3);
+.status-ok {
+  color: var(--color-down);
 }
 
-.status-value.not-supported {
-  color: var(--danger);
-  text-shadow: 0 0 10px rgba(255, 71, 87, 0.3);
+.status-error {
+  color: var(--color-up);
 }
 
-.status-value.warning {
-  color: var(--warning);
-  text-shadow: 0 0 10px rgba(255, 165, 2, 0.3);
+.status-warning {
+  color: var(--accent);
 }
 
 .notification-options {
   display: flex;
   flex-direction: column;
-  gap: 20px;
-}
-
-.option-group {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
+  gap: var(--space-4);
 }
 
 .option-label {
   display: flex;
-  align-items: center;
-  gap: 12px;
+  align-items: flex-start;
+  gap: var(--space-3);
   cursor: pointer;
-  font-weight: 600;
-  color: var(--text-bright);
 }
 
 .option-label input[type='checkbox'] {
@@ -454,17 +393,18 @@ watch(settings, saveSettings, { deep: true });
 .checkmark {
   width: 20px;
   height: 20px;
-  border: 2px solid var(--border-color);
-  border-radius: 6px;
+  min-width: 20px;
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-sm);
   position: relative;
-  transition: all 0.3s ease;
-  background: rgba(25, 32, 56, 0.5);
+  transition: all var(--duration-fast) var(--ease);
+  background: var(--bg-raised);
+  margin-top: 2px;
 }
 
 .option-label input[type='checkbox']:checked + .checkmark {
-  background: linear-gradient(135deg, var(--accent-cyan), var(--accent-blue));
-  border-color: var(--accent-cyan);
-  box-shadow: 0 0 15px rgba(0, 217, 255, 0.4);
+  background: var(--accent);
+  border-color: var(--accent);
 }
 
 .option-label input[type='checkbox']:checked + .checkmark::after {
@@ -473,7 +413,7 @@ watch(settings, saveSettings, { deep: true });
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  color: var(--bg-primary);
+  color: var(--bg-deepest);
   font-size: 12px;
   font-weight: bold;
 }
@@ -483,78 +423,77 @@ watch(settings, saveSettings, { deep: true });
   cursor: not-allowed;
 }
 
-.option-description {
-  margin: 0 0 0 32px;
-  font-size: 14px;
-  color: var(--text-secondary);
+.label-text {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.label-title {
+  font-size: var(--text-sm);
+  font-weight: var(--font-medium);
+  color: var(--text-primary);
+}
+
+.label-desc {
+  font-size: var(--text-xs);
+  color: var(--text-muted);
+  line-height: 1.4;
 }
 
 .action-buttons {
   display: flex;
-  gap: 12px;
+  gap: var(--space-3);
   flex-wrap: wrap;
 }
 
-.enable-btn,
-.disable-btn,
-.test-btn {
-  padding: 12px 20px;
+.btn {
+  height: 40px;
+  padding: 0 var(--space-4);
   border: none;
-  border-radius: 8px;
-  font-size: 14px;
-  font-weight: 600;
+  border-radius: var(--radius-md);
+  font-size: var(--text-sm);
+  font-weight: var(--font-medium);
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: all var(--duration-fast) var(--ease);
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: var(--space-2);
 }
 
-.enable-btn {
-  background: var(--gradient-success);
-  color: var(--bg-primary);
-  border: 1px solid var(--success);
-  box-shadow: 0 0 20px rgba(0, 255, 136, 0.3);
+.btn-primary {
+  background: var(--accent);
+  color: var(--bg-deepest);
 }
 
-.enable-btn:hover:not(:disabled) {
-  transform: translateY(-2px);
-  box-shadow: 0 0 30px rgba(0, 255, 136, 0.5);
+.btn-primary:hover:not(:disabled) {
+  background: rgba(245, 165, 36, 0.9);
 }
 
-.disable-btn {
-  background: var(--gradient-danger);
-  color: var(--text-bright);
-  border: 1px solid var(--danger);
-  box-shadow: 0 0 20px rgba(255, 71, 87, 0.3);
+.btn-danger {
+  background: var(--color-up);
+  color: white;
 }
 
-.disable-btn:hover:not(:disabled) {
-  transform: translateY(-2px);
-  box-shadow: 0 0 30px rgba(255, 71, 87, 0.5);
+.btn-danger:hover:not(:disabled) {
+  background: rgba(229, 72, 77, 0.9);
 }
 
-.test-btn {
-  background: rgba(25, 32, 56, 0.5);
+.btn-secondary {
+  background: var(--bg-raised);
   color: var(--text-secondary);
-  border: 1px solid var(--border-color);
-  backdrop-filter: blur(10px);
+  border: 1px solid var(--border-default);
 }
 
-.test-btn:hover:not(:disabled) {
-  background: rgba(0, 217, 255, 0.15);
-  color: var(--accent-cyan);
-  border-color: var(--accent-cyan);
-  box-shadow: 0 0 15px rgba(0, 217, 255, 0.3);
+.btn-secondary:hover:not(:disabled) {
+  background: var(--bg-subtle);
+  color: var(--text-primary);
+  border-color: var(--border-strong);
 }
 
-.enable-btn:disabled,
-.disable-btn:disabled,
-.test-btn:disabled {
-  opacity: 0.6;
+.btn:disabled {
+  opacity: 0.5;
   cursor: not-allowed;
-  transform: none;
-  box-shadow: none;
 }
 
 .loading-spinner {
@@ -563,92 +502,67 @@ watch(settings, saveSettings, { deep: true });
   border: 2px solid transparent;
   border-top: 2px solid currentColor;
   border-radius: 50%;
-  animation: spin 1s linear infinite;
+  animation: spin 0.8s linear infinite;
 }
 
 @keyframes spin {
-  0% {
-    transform: rotate(0deg);
-  }
-  100% {
-    transform: rotate(360deg);
-  }
+  to { transform: rotate(360deg); }
 }
 
 .subscription-info {
-  background: rgba(0, 255, 136, 0.15);
-  padding: 16px;
-  border-radius: 12px;
-  border: 1px solid var(--success);
-  border-left: 4px solid var(--success);
-  box-shadow: 0 0 20px rgba(0, 255, 136, 0.2);
-  backdrop-filter: blur(10px);
-}
-
-.subscription-info h4 {
-  margin: 0 0 12px 0;
-  color: var(--success);
-  font-size: 16px;
+  background: rgba(48, 164, 108, 0.1);
+  padding: var(--space-4);
+  border-radius: var(--radius-md);
+  border: 1px solid rgba(48, 164, 108, 0.3);
+  border-left-width: 3px;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
 }
 
 .info-item {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 8px;
-}
-
-.info-item:last-child {
-  margin-bottom: 0;
 }
 
 .info-label {
-  font-size: 14px;
+  font-size: var(--text-sm);
   color: var(--text-secondary);
 }
 
 .info-value {
-  font-size: 14px;
-  font-weight: 600;
-  color: var(--success);
+  font-size: var(--text-sm);
+  font-weight: var(--font-medium);
+  color: var(--text-primary);
+  font-variant-numeric: tabular-nums;
 }
 
-.error-message {
-  background: rgba(255, 71, 87, 0.15);
-  color: var(--danger);
-  padding: 12px;
-  border-radius: 10px;
-  border: 1px solid var(--danger);
-  border-left: 4px solid var(--danger);
-  font-size: 14px;
-  box-shadow: 0 0 15px rgba(255, 71, 87, 0.2);
-  backdrop-filter: blur(10px);
+.message {
+  padding: var(--space-3);
+  border-radius: var(--radius-md);
+  border-left-width: 3px;
+  font-size: var(--text-sm);
 }
 
-.success-message {
-  background: rgba(0, 255, 136, 0.15);
-  color: var(--success);
-  padding: 12px;
-  border-radius: 10px;
-  border: 1px solid var(--success);
-  border-left: 4px solid var(--success);
-  font-size: 14px;
-  box-shadow: 0 0 15px rgba(0, 255, 136, 0.2);
-  backdrop-filter: blur(10px);
+.message-error {
+  background: rgba(229, 72, 77, 0.1);
+  color: var(--color-up);
+  border: 1px solid rgba(229, 72, 77, 0.3);
+}
+
+.message-success {
+  background: rgba(48, 164, 108, 0.1);
+  color: var(--color-down);
+  border: 1px solid rgba(48, 164, 108, 0.3);
 }
 
 @media (max-width: 768px) {
-  .notification-settings {
-    padding: 16px;
-  }
-
   .action-buttons {
     flex-direction: column;
   }
 
-  .enable-btn,
-  .disable-btn,
-  .test-btn {
+  .btn {
     width: 100%;
     justify-content: center;
   }
