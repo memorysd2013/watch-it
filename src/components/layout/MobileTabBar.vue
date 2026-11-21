@@ -74,8 +74,10 @@ const isActive = (path) => route.path === path
 <style scoped>
 .tab-bar {
   display: flex;
-  height: var(--space-16);
+  /* Minimum 56px tap area + safe area */
+  min-height: 56px;
   padding: 0;
+  padding-bottom: env(safe-area-inset-bottom);
 }
 
 .tab-item {
