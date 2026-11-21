@@ -51,18 +51,18 @@
       v-if="assetItems.length === 0"
       class="empty-state"
     >
-      <div class="empty-icon">
-        <BarChart3 :size="48" />
+      <BarChart3 :size="48" class="empty-icon" />
+      <div class="empty-content">
+        <h3>還沒有資產項目</h3>
+        <p>點擊「新增資產項目」開始記錄您的資產配置</p>
+        <button
+          class="add-first-btn"
+          @click="openAddAsset"
+        >
+          <Plus :size="16" />
+          新增第一個資產項目
+        </button>
       </div>
-      <h3>還沒有資產項目</h3>
-      <p>點擊「新增資產項目」開始記錄您的資產配置</p>
-      <button
-        class="add-first-btn"
-        @click="openAddAsset"
-      >
-        <Plus :size="16" />
-        新增第一個資產項目
-      </button>
     </div>
 
     <div

@@ -248,10 +248,12 @@ const getTypeLabel = (type) => {
             </tr>
           </tbody>
         </table>
+        </div>
       </div>
 
       <!-- Mobile list view -->
-      <div class="list-wrapper mobile-only">
+      <div class="mobile-only">
+        <div class="list-wrapper">
         <div
           v-for="item in filteredItems"
           :key="item.id"
@@ -290,6 +292,7 @@ const getTypeLabel = (type) => {
               <Trash2 :size="14" />
             </button>
           </div>
+        </div>
         </div>
       </div>
     </div>
