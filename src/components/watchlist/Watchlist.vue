@@ -249,6 +249,49 @@ const getTypeLabel = (type) => {
           </tbody>
         </table>
       </div>
+
+      <!-- Mobile list view -->
+      <div class="list-wrapper mobile-only">
+        <div
+          v-for="item in filteredItems"
+          :key="item.id"
+          class="list-item"
+        >
+          <div class="list-item-main">
+            <div class="list-item-left">
+              <span class="list-symbol number">{{ item.symbol }}</span>
+              <span class="list-name">{{ item.name }}</span>
+              <span class="list-type">{{ getTypeLabel(item.type) }}</span>
+            </div>
+            <div class="list-item-right">
+              <div class="list-price number">{{ formatPrice(item.currentPrice) }}</div>
+              <div
+                :class="['list-change', 'number', {
+                  'price-up': item.changePercent > 0,
+                  'price-down': item.changePercent < 0
+                }]"
+              >
+                <component
+                  :is="item.changePercent > 0 ? TrendingUp : TrendingDown"
+                  :size="12"
+                  class="change-icon"
+                />
+                {{ formatPercent(item.changePercent) }}
+              </div>
+            </div>
+          </div>
+          <div class="list-item-footer">
+            <span class="list-time number">{{ formatTime(item.lastUpdated) }}</span>
+            <button
+              @click="deleteItem(item)"
+              class="btn-icon-small"
+              aria-label="刪除"
+            >
+              <Trash2 :size="14" />
+            </button>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 </template>
