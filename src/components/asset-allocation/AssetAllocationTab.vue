@@ -9,13 +9,15 @@
             class="toggle-view-btn"
             @click="viewMode = viewMode === 'list' ? 'chart' : 'list'"
           >
-            {{ viewMode === 'list' ? '📊 圖表' : '📋 列表' }}
+            <component :is="viewMode === 'list' ? BarChart3 : List" :size="16" />
+            {{ viewMode === 'list' ? '圖表' : '列表' }}
           </button>
           <button
             class="add-asset-btn"
             @click="openAddAsset"
           >
-            ➕ 新增資產項目
+            <Plus :size="16" />
+            新增資產項目
           </button>
         </div>
       </div>
@@ -49,13 +51,16 @@
       v-if="assetItems.length === 0"
       class="empty-state"
     >
-      <div class="empty-icon">📈</div>
+      <div class="empty-icon">
+        <BarChart3 :size="48" />
+      </div>
       <h3>還沒有資產項目</h3>
       <p>點擊「新增資產項目」開始記錄您的資產配置</p>
       <button
         class="add-first-btn"
         @click="openAddAsset"
       >
+        <Plus :size="16" />
         新增第一個資產項目
       </button>
     </div>
@@ -109,6 +114,7 @@ import AssetItemCard from './AssetItemCard.vue';
 import AssetAllocationChart from './AssetAllocationChart.vue';
 import AssetItemForm from './AssetItemForm.vue';
 import SubItemForm from './SubItemForm.vue';
+import { BarChart3, List, Plus } from 'lucide-vue-next';
 
 const store = useAssetAllocationStore();
 const exchangeStore = useExchangeRateStore();
