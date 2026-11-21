@@ -5,34 +5,24 @@ import vue from '@vitejs/plugin-vue'
 import vueDevTools from 'vite-plugin-vue-devtools'
 import { VitePWA } from 'vite-plugin-pwa'
 
-// Safari 手機瀏覽器環境變數注入插件
+// Safari 手機瀏覽器環境變數注入插件 (僅注入，不記錄)
 function safariEnvPlugin() {
   return {
     name: 'safari-env-injection',
     transformIndexHtml(html) {
-      // 在 HTML 中注入環境變數到 window 物件
+      // 在 HTML 中注入環境變數到 window 物件 (生產環境不輸出 console)
       const envScript = `
         <script>
-          // Safari 手機瀏覽器環境變數注入
           window.__ENV__ = {
-            // VITE_ 前綴的環境變數
             VITE_VAPID_PUBLIC_KEY: '${process.env.VITE_VAPID_PUBLIC_KEY || ''}',
             VITE_VAPID_EMAIL: '${process.env.VITE_VAPID_EMAIL || ''}',
             VITE_APP_URL: '${process.env.VITE_APP_URL || ''}',
             VITE_APP_VERSION: '${process.env.npm_package_version || '1.1.0'}',
-            
-            // 非 VITE_ 前綴的環境變數（Safari 備援方案）
             VAPID_PUBLIC_KEY: '${process.env.VITE_VAPID_PUBLIC_KEY || process.env.VAPID_PUBLIC_KEY || ''}',
             VAPID_EMAIL: '${process.env.VITE_VAPID_EMAIL || process.env.VAPID_EMAIL || ''}',
             APP_URL: '${process.env.VITE_APP_URL || process.env.APP_URL || ''}',
             APP_VERSION: '${process.env.npm_package_version || '1.1.0'}'
           };
-          console.log('🔧 Safari 環境變數已注入:', window.__ENV__);
-          console.log('🔍 VAPID 公鑰檢查:', {
-            'VITE_VAPID_PUBLIC_KEY': window.__ENV__.VITE_VAPID_PUBLIC_KEY,
-            'VAPID_PUBLIC_KEY': window.__ENV__.VAPID_PUBLIC_KEY,
-            '兩者是否相同': window.__ENV__.VITE_VAPID_PUBLIC_KEY === window.__ENV__.VAPID_PUBLIC_KEY
-          });
         </script>
       `
       return html.replace('<head>', `<head>${envScript}`)
@@ -41,10 +31,10 @@ function safariEnvPlugin() {
 }
 
 // https://vite.dev/config/
-export default defineConfig({
+export default defineConfig(({ mode }) => ({
   plugins: [
     vue(),
-    vueDevTools(),
+    ***REMOVED***(mode === 'development' ? [vueDevTools()] : []),
     safariEnvPlugin(), // Safari 手機瀏覽器環境變數注入
     VitePWA({
       registerType: 'autoUpdate',
@@ -160,5 +150,14 @@ export default defineConfig({
         }
       }
     }
+  },
+  build: {
+    minify: 'terser',
+    terserOptions: {
+      compress: {
+        drop_console: true,
+        drop_debugger: true
+      }
+    }
   }
-})
+}))

@@ -105,15 +105,18 @@ npm run generate-vapid
 
 ## 📚 相關文檔
 
+所有詳細文檔已移至 `docs/` 目錄：
+
 ### 基礎設定
-- [PWA 設定指南](./PWA_SETUP.md)
-- [部署指南](./DEPLOYMENT.md)
-- [環境變量管理](./ENV_MANAGEMENT.md)
+- [PWA 設定指南](./docs/PWA_SETUP.md)
+- [部署指南](./docs/DEPLOYMENT.md)
+- [環境變量管理](./docs/ENV_MANAGEMENT.md)
+- [安全性指南](./docs/SECURITY.md)
 
 ### 推播通知
-- [VAPID 密鑰設定指南](./ENV_VAPID_SETUP.md)
-- [Safari 推播通知快速修復](./SAFARI_NOTIFICATION_QUICK_FIX.md) ⭐
-- [Safari 推播通知詳細技術文檔](./SAFARI_PUSH_NOTIFICATION_FIX.md)
+- [VAPID 密鑰設定指南](./docs/ENV_VAPID_SETUP.md)
+- [Safari 推播通知快速修復](./docs/SAFARI_NOTIFICATION_QUICK_FIX.md) ⭐
+- [Safari 推播通知詳細技術文檔](./docs/SAFARI_PUSH_NOTIFICATION_FIX.md)
 
 ## 🛠️ 技術棧
 
