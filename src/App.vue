@@ -7,10 +7,13 @@ import notificationService from './services/notification.js'
 import AppNav from './components/layout/AppNav.vue'
 import MobileTabBar from './components/layout/MobileTabBar.vue'
 import ToastContainer from './components/ui/ToastContainer.vue'
+import { usePWA } from './composables/usePWA.js'
 
 const watchlistStore = useWatchlistStore()
 const assetAllocationStore = useAssetAllocationStore()
 const exchangeRateStore = useExchangeRateStore()
+
+usePWA()
 
 onMounted(async () => {
   watchlistStore.loadFromLocalStorage()
