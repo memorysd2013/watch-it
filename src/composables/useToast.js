@@ -33,9 +33,9 @@ export function useToast() {
     }
   }
 
-  const success = (message, options) => show(message, { ***REMOVED***options, type: 'success' })
-  const error = (message, options) => show(message, { ***REMOVED***options, type: 'error' })
-  const info = (message, options) => show(message, { ***REMOVED***options, type: 'info' })
+  const success = (message, options) => show(message, { ...options, type: 'success' })
+  const error = (message, options) => show(message, { ...options, type: 'error' })
+  const info = (message, options) => show(message, { ...options, type: 'info' })
 
   return {
     toasts,
