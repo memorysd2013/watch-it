@@ -293,7 +293,6 @@ const getTypeLabel = (type) => {
             </button>
           </div>
         </div>
-        </div>
       </div>
     </div>
   </div>
